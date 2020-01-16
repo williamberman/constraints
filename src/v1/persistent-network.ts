@@ -60,7 +60,7 @@ export class PersistentNetwork {
         const { cells, repositories } = setEqual(aCellId, bCellId, this.network)
         const newCells = this.network.cells.merge(cells)
 
-        const xRepositories = awaken(cells, Map(), {
+        const updatedRepositories = awaken(cells, Map(), {
             ...this.network,
             repositories,
             cells: newCells
@@ -69,7 +69,7 @@ export class PersistentNetwork {
         this.network = {
             ...this.network,
             cells: newCells,
-            repositories: xRepositories,
+            repositories: repositories.merge(updatedRepositories),
         }
     }
 
