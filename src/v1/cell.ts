@@ -52,7 +52,7 @@ export const variable = (): [Cell, Repository] => {
     return makeCell()
 }
 
-export const merge = (aRepo: Repository, bRepo: Repository): Repository => {
+export const mergeRepositories = (aRepo: Repository, bRepo: Repository): Repository => {
     const content: Content = (() => {
         if (aRepo.content.bound && bRepo.content.bound) {
             assert(aRepo.content.data === bRepo.content.data)

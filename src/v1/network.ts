@@ -1,6 +1,6 @@
 import { Map } from 'immutable'
 
-import { Cell, constant, merge, Repository, variable } from './cell'
+import { Cell, constant, mergeRepositories, Repository, variable } from './cell'
 import { awaken, Constraint, ConstraintType, create } from './constraint'
 import { ensureGet } from './utils'
 
@@ -84,40 +84,33 @@ export class PersistentNetwork {
         const aRepository = ensureGet(this.network.repositories, aCell.repositoryId)
         const bRepository = ensureGet(this.network.repositories, bCell.repositoryId)
 
-        const newRepository = merge(aRepository, bRepository)
+        const newRepository = mergeRepositories(aRepository, bRepository)
 
         const repositories = this.network.repositories
             .filter((repo) => repo !== aRepository && repo !== bRepository)
             .set(newRepository.id, newRepository)
 
-        let cellsToAwaken = Map<symbol, Cell>()
+        const cellsToAwaken = this.network.cells
+            .filter((cell) =>
+                cell.repositoryId === aRepository.id ||
+                cell.repositoryId === bRepository.id)
+            .map((cell) => ({
+                ...cell,
+                repositoryId: newRepository.id,
+            }))
 
-        const cells = this.network.cells.map((cell) => {
-            if (cell.repositoryId === aRepository.id || cell.repositoryId === bRepository.id) {
-                const newCell = {
-                    ...cell,
-                    repositoryId: newRepository.id,
-                }
+        const cells = this.network.cells.merge(cellsToAwaken)
 
-                cellsToAwaken = cellsToAwaken.set(newCell.id, newCell)
-
-                return newCell
-            } else {
-                return cell
-            }
+        const xRepositories = awaken(cellsToAwaken, Map(), {
+            ...this.network,
+            cells,
+            repositories,
         })
 
         this.network = {
             ...this.network,
-            repositories,
             cells,
-        }
-
-        const updatedRepositories = this.awaken(cellsToAwaken)
-
-        this.network = {
-            ...this.network,
-            repositories: updatedRepositories,
+            repositories: xRepositories,
         }
     }
 
@@ -128,10 +121,6 @@ export class PersistentNetwork {
         return repo.content.bound ?
             repo.content.data :
             undefined
-    }
-
-    private awaken(cells: Map<symbol, Cell>): Map<symbol, Repository> {
-        return awaken(cells, Map(), this.network)
     }
 
     private getRepo(cellId: symbol, repositories?: Map<symbol, Repository>): Repository {
