@@ -46,6 +46,10 @@ export const adder: ConstraintType = (() => {
     }
 })()
 
+export const stdLib = {
+    [adder.id]: adder,
+}
+
 export const create = (ct: ConstraintType): [Constraint, Cell[], Repository[]] => {
     const cellMapping: any = {}
     const cells: Cell[] = []

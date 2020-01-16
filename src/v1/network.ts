@@ -10,8 +10,24 @@ type Network = Readonly<{
     constraints: Constraint[],
 }>
 
+export const fromPartial = ({
+    repositories = [],
+    cells = [],
+    constraintTypes = [],
+    constraints = [],
+}: Partial<Network>,
+): Network => {
+    return {
+        repositories,
+        cells,
+        constraintTypes,
+        constraints,
+    }
+}
+
 export class PersistentNetwork {
-    constructor(private network: Network) { }
+    constructor(private network: Network) {
+    }
 
     constant(n: number): symbol {
         const [cell, repo] = constant(n)
@@ -124,8 +140,21 @@ export class PersistentNetwork {
         }
     }
 
+    // undefined indicates not bound
+    valueOf(cellId: symbol): number | undefined {
+        const cell = this.network.cells.find(({ id }) => id === cellId)!
+        assert(cell)
+        const repo = this.network.repositories.find(({ id }) => id === cell.repositoryId)!
+        assert(repo)
+
+        return repo.content.bound ?
+            repo.content.data :
+            undefined
+    }
+
+    // TODO
     // tslint:disable-next-line: variable-name
     private awaken(_cells: Cell[]): Repository[] {
-        return []
+        return this.network.repositories
     }
 }
