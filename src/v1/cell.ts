@@ -5,7 +5,7 @@ export type Repository = Readonly<{
     content: Content,
 }>
 
-type Content = Readonly<{
+export type Content = Readonly<{
     bound: true,
     data: number,
 } | {

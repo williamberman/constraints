@@ -14,13 +14,13 @@ export type Constraint = Readonly<{
     constraintTypeId: symbol,
 }>
 
-type Rule = Readonly<{
+export type Rule = Readonly<{
+    // update should have the same arity as input's length
     input: symbol[],
     update: (...args: number[]) => Record<symbol, number>,
 }>
 
 export const adder: ConstraintType = (() => {
-    // a + b = c
     const a = Symbol('a')
     const b = Symbol('b')
     const c = Symbol('c')
