@@ -7,14 +7,17 @@
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
     "prebuild": "npm run-script lint",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^24.9.0",
     "@types/node": "^13.1.7",
     "immutable": "^4.0.0-rc.12",
+    "jest": "^24.9.0",
     "ramda": "^0.26.1",
+    "ts-jest": "^24.3.0",
     "typescript": "^3.7.4"
   }
 }
