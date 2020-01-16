@@ -9,7 +9,7 @@ export const adder: ConstraintType = (() => {
     const c = Symbol('c')
 
     return {
-        id: Symbol(),
+        id: Symbol('adder'),
         cells: { a, b, c },
         rules: [
             {
@@ -38,7 +38,7 @@ export const multiplier: ConstraintType = (() => {
     const c = Symbol('c')
 
     return {
-        id: Symbol(),
+        id: Symbol('multiplier'),
         cells: { a, b, c },
         rules: [
             {
