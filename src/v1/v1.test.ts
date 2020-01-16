@@ -4,7 +4,7 @@ import { fromPartial, PersistentNetwork } from './network'
 describe('V1', () => {
     test('standard behavior', () => {
         const net = new PersistentNetwork(fromPartial({
-            constraintTypes: [stdLib.adder],
+            constraintTypes: stdLib,
         }))
 
         const foo = net.constant(1)

@@ -1,3 +1,5 @@
+import { Map } from 'immutable'
+
 import { Cell, Repository, variable } from './cell'
 
 export type ConstraintType = Readonly<{
@@ -8,7 +10,7 @@ export type ConstraintType = Readonly<{
 
 export type Constraint = Readonly<{
     id: symbol,
-    cellMapping: Record<symbol, symbol>, // { id in constraint -> general id }
+    cellMapping: Map<symbol, symbol>, // { id in constraint -> general id }
     constraintTypeId: symbol,
 }>
 
@@ -46,21 +48,21 @@ export const adder: ConstraintType = (() => {
     }
 })()
 
-export const stdLib = {
-    [adder.id]: adder,
-}
+export const stdLib = Map<symbol, ConstraintType>([
+    [adder.id, adder],
+])
 
-export const create = (ct: ConstraintType): [Constraint, Cell[], Repository[]] => {
-    const cellMapping: any = {}
-    const cells: Cell[] = []
-    const repos: Repository[] = []
+export const create = (ct: ConstraintType): [Constraint, Map<symbol, Cell>, Map<symbol, Repository>] => {
+    let cellMapping = Map<symbol, symbol>()
+    let cells = Map<symbol, Cell>()
+    let repos = Map<symbol, Repository>()
 
     ct.cellIds.map((cellId) => {
         const [cell, repo] = variable()
-        cells.push(cell)
-        repos.push(repo)
+        cells = cells.set(cell.id, cell)
+        repos = repos.set(repo.id, repo)
 
-        cellMapping[cell.id] = cellId
+        cellMapping = cellMapping.set(cell.id, cellId)
     })
 
     return [

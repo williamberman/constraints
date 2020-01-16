@@ -1,20 +1,26 @@
 import * as assert from 'assert'
+import { Collection, Map } from 'immutable'
 
 import { Cell, constant, merge, Repository, variable } from './cell'
 import { Constraint, ConstraintType, create } from './constraint'
 
+const ensureGet = <K, V>(col: Collection<K, V>, key: K): V => {
+    assert(col.has(key))
+    return col.get(key)!
+}
+
 type Network = Readonly<{
-    repositories: Repository[],
-    cells: Cell[],
-    constraintTypes: ConstraintType[],
-    constraints: Constraint[],
+    repositories: Map<symbol, Repository>,
+    cells: Map<symbol, Cell>,
+    constraintTypes: Map<symbol, ConstraintType>,
+    constraints: Map<symbol, Constraint>,
 }>
 
 export const fromPartial = ({
-    repositories = [],
-    cells = [],
-    constraintTypes = [],
-    constraints = [],
+    repositories = Map(),
+    cells = Map(),
+    constraintTypes = Map(),
+    constraints = Map(),
 }: Partial<Network>,
 ): Network => {
     return {
@@ -34,8 +40,8 @@ export class PersistentNetwork {
 
         this.network = {
             ...this.network,
-            cells: this.network.cells.concat([cell]),
-            repositories: this.network.repositories.concat([repo]),
+            cells: this.network.cells.set(cell.id, cell),
+            repositories: this.network.repositories.set(repo.id, repo),
         }
 
         return cell.id
@@ -46,68 +52,48 @@ export class PersistentNetwork {
 
         this.network = {
             ...this.network,
-            cells: this.network.cells.concat([cell]),
-            repositories: this.network.repositories.concat([repo]),
+            cells: this.network.cells.set(cell.id, cell),
+            repositories: this.network.repositories.set(repo.id, repo),
         }
 
         return cell.id
     }
 
     create(id: symbol): symbol {
-        const ct = this.network.constraintTypes.find(({ id: xId }) => xId === id)
-
-        assert(ct)
+        const ct = ensureGet(this.network.constraintTypes, id)
 
         const [constraint, cells, repos] = create(ct!)
 
         this.network = {
             ...this.network,
-            constraints: this.network.constraints.concat([constraint]),
-            cells: this.network.cells.concat(cells),
-            repositories: this.network.repositories.concat(repos),
+            constraints: this.network.constraints.set(constraint.id, constraint),
+            cells: this.network.cells.merge(cells),
+            repositories: this.network.repositories.merge(repos),
         }
 
         return constraint.id
     }
 
-    the(constraintId: symbol, cellIdInConstraint: symbol): symbol {
-        const ct = this.network.constraintTypes.find(({ id }) => id === constraintId)!
-
-        assert(ct)
-
-        const generalId = (ct.cellIds as any)[cellIdInConstraint]
-
-        assert(generalId)
-
-        const cell = this.network.cells.find(({ id }) => id === generalId)!
-
-        assert(cell)
+    the(cellIdInConstraintType: symbol, constraintId: symbol): symbol {
+        const constraint = ensureGet(this.network.constraints, constraintId)
+        const generalId = ensureGet(constraint.cellMapping, cellIdInConstraintType)
+        const cell = ensureGet(this.network.cells, generalId)
 
         return cell.id
     }
 
     setEquals(aCellId: symbol, bCellId: symbol) {
-        const aCell = this.network.cells.find(({ id }) => id === aCellId)!
+        const aCell = ensureGet(this.network.cells, aCellId)
+        const bCell = ensureGet(this.network.cells, bCellId)
 
-        assert(aCell)
-
-        const bCell = this.network.cells.find(({ id }) => id === bCellId)!
-
-        assert(bCell)
-
-        const aRepository = this.network.repositories.find(({ id }) => id === aCell.repositoryId)!
-
-        assert(aRepository)
-
-        const bRepository = this.network.repositories.find(({ id }) => id === bCell.repositoryId)!
-
-        assert(bRepository)
+        const aRepository = ensureGet(this.network.repositories, aCell.repositoryId)
+        const bRepository = ensureGet(this.network.repositories, bCell.repositoryId)
 
         const newRepository = merge(aRepository, bRepository)
 
         const repositories = this.network.repositories
             .filter((repo) => repo !== aRepository && repo !== bRepository)
-            .concat([newRepository])
+            .set(newRepository.id, newRepository)
 
         const cellsToAwaken: Cell[] = []
 
@@ -142,10 +128,8 @@ export class PersistentNetwork {
 
     // undefined indicates not bound
     valueOf(cellId: symbol): number | undefined {
-        const cell = this.network.cells.find(({ id }) => id === cellId)!
-        assert(cell)
-        const repo = this.network.repositories.find(({ id }) => id === cell.repositoryId)!
-        assert(repo)
+        const cell = ensureGet(this.network.cells, cellId)
+        const repo = ensureGet(this.network.repositories, cell.repositoryId)
 
         return repo.content.bound ?
             repo.content.data :
@@ -154,7 +138,7 @@ export class PersistentNetwork {
 
     // TODO
     // tslint:disable-next-line: variable-name
-    private awaken(_cells: Cell[]): Repository[] {
+    private awaken(_cells: Cell[]): Map<symbol, Repository> {
         return this.network.repositories
     }
 }
