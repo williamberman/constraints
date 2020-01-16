@@ -63,7 +63,7 @@ export class PersistentNetwork {
         const updatedRepositories = awaken(cells, Map(), {
             ...this.network,
             repositories,
-            cells: newCells
+            cells: newCells,
         })
 
         this.network = {

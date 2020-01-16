@@ -7,7 +7,7 @@ import { ensureGet } from './utils'
 
 export type ConstraintType = Readonly<{
     id: symbol,
-    cellIds: symbol[],
+    cells: Record<string, symbol>,
     rules: Rule[],
 }>
 
@@ -28,12 +28,12 @@ export const create = (ct: ConstraintType): [Constraint, Map<symbol, Cell>, Map<
     let cells = Map<symbol, Cell>()
     let repos = Map<symbol, Repository>()
 
-    ct.cellIds.map((cellId) => {
+    Object.values(ct.cells).map((cellId) => {
         const [cell, repo] = variable()
         cells = cells.set(cell.id, cell)
         repos = repos.set(repo.id, repo)
 
-        cellMapping = cellMapping.set(cell.id, cellId)
+        cellMapping = cellMapping.set(cellId, cell.id)
     })
 
     return [
@@ -133,12 +133,11 @@ const runRule = ({
         }
     })()
 
-    return Object.keys(theUpdate).reduce((acc, cellId) => {
-        const xcellId = cellId as unknown as symbol
-        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, xcellId))
+    return Object.getOwnPropertySymbols(theUpdate).reduce((acc, cellId) => {
+        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
         const repo = ensureGet(repositories, cell.repositoryId)
 
-        const theUpdateData = (theUpdate as any)[xcellId]
+        const theUpdateData = (theUpdate as any)[cellId]
 
         if (repo.content.bound && repo.content.data === theUpdateData) {
             // Do nothing. Adds no information

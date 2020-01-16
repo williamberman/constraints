@@ -1,6 +1,6 @@
 import { fromPartial } from './network'
 import { PersistentNetwork } from './persistent-network'
-import { stdLib } from './std-lib'
+import { adder, stdLib } from './std-lib'
 
 describe('V1', () => {
     let net: PersistentNetwork
@@ -47,5 +47,37 @@ describe('V1', () => {
         expect(net.valueOf(foo)).toEqual(1)
         expect(net.valueOf(bar)).toEqual(1)
         expect(net.valueOf(baz)).toEqual(1)
+    })
+
+    describe('Addition', () => {
+        let foo: symbol
+        let bar: symbol
+        let baz: symbol
+
+        beforeEach(() => {
+            foo = net.variable()
+            bar = net.variable()
+            baz = net.variable()
+
+            const add = net.create(adder.id)
+
+            net.setEqual(net.the(adder.cells.a, add), foo)
+            net.setEqual(net.the(adder.cells.b, add), bar)
+            net.setEqual(net.the(adder.cells.c, add), baz)
+        })
+
+        test('forwards', () => {
+            net.setEqual(foo, net.constant(1))
+            net.setEqual(bar, net.constant(2))
+
+            expect(net.valueOf(baz)).toEqual(3)
+        })
+
+        test('backwards', () => {
+            net.setEqual(bar, net.constant(2))
+            net.setEqual(baz, net.constant(3))
+
+            expect(net.valueOf(foo)).toEqual(1)
+        })
     })
 })
