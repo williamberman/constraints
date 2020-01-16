@@ -1,6 +1,8 @@
 import { Map } from 'immutable'
+import { all, any } from 'ramda'
 
 import { Cell, Repository, variable } from './cell'
+import { ensureGet } from './utils'
 
 export type ConstraintType = Readonly<{
     id: symbol,
@@ -74,4 +76,119 @@ export const create = (ct: ConstraintType): [Constraint, Map<symbol, Cell>, Map<
         cells,
         repos,
     ]
+}
+
+export const awaken = (
+    updatedCells: Map<symbol, Cell>,
+    updated: Map<symbol, Repository>,
+    args: {
+        constraints: Map<symbol, Constraint>,
+        constraintTypes: Map<symbol, ConstraintType>,
+        repositories: Map<symbol, Repository>,
+        cells: Map<symbol, Cell>,
+    },
+): Map<symbol, Repository> => {
+    if (updatedCells.size === 0) {
+        return updated
+    }
+
+    const {
+        constraints,
+        constraintTypes,
+        repositories,
+        cells,
+    } = args
+
+    let furtherAwaken = Map<symbol, Cell>()
+    let newUpdated = updated
+
+    constraints.forEach((constraint) => {
+        const constraintType = ensureGet(constraintTypes, constraint.constraintTypeId)
+
+        const allRepos = repositories.merge(newUpdated)
+
+        constraintType.rules.forEach((rule) => {
+            const newRepos = runRule({
+                rule,
+                constraint,
+                updatedCells,
+                cells,
+                repositories: allRepos,
+            })
+
+            newUpdated = newUpdated.merge(newRepos)
+
+            newRepos.forEach((repo) => {
+                const newCells = cells.filter(({ repositoryId }) => repositoryId === repo.id)
+                furtherAwaken = furtherAwaken.merge(newCells)
+            })
+        })
+    })
+
+    return awaken(furtherAwaken, newUpdated, args)
+}
+
+const runRule = ({
+    rule,
+    constraint,
+    cells,
+    repositories,
+    updatedCells,
+}: {
+    rule: Rule,
+    constraint: Constraint,
+    cells: Map<symbol, Cell>,
+    repositories: Map<symbol, Repository>,
+    updatedCells: Map<symbol, Cell>,
+}): Map<symbol, Repository> => {
+    const contents = rule.input.map((cellId) => {
+        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
+        return ensureGet(repositories, cell.repositoryId).content
+    })
+
+    const inputsAreUpdated = any((cellId) => {
+        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
+        return updatedCells.has(cell.id)
+    }, rule.input)
+
+    const allContentsBound = all(({ bound }) => bound, contents)
+
+    const theUpdate = (() => {
+        if (inputsAreUpdated && allContentsBound) {
+            const args = contents.map((content) => {
+                if (content.bound) {
+                    return content.data
+                } else {
+                    throw new Error('assert false')
+                }
+            })
+
+            return rule.update(...args)
+        } else {
+            return {}
+        }
+    })()
+
+    return Object.keys(theUpdate).reduce((acc, cellId) => {
+        const xcellId = cellId as unknown as symbol
+        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, xcellId))
+        const repo = ensureGet(repositories, cell.repositoryId)
+
+        const theUpdateData = (theUpdate as any)[xcellId]
+
+        if (repo.content.bound && repo.content.data === theUpdateData) {
+            // Do nothing. Adds no information
+            return acc
+        } else if (repo.content.bound && repo.content.data !== theUpdateData) {
+            throw new Error('Illegal update to repo: TODO better error message')
+        } else {
+            return acc.set(repo.id, {
+                ...repo,
+                content: {
+                    bound: true,
+                    data: theUpdateData,
+                },
+            })
+        }
+    }, Map<symbol, Repository>())
 }

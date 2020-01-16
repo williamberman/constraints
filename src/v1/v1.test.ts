@@ -30,7 +30,6 @@ describe('V1', () => {
         expect(net.valueOf(bar)).toEqual(1)
     })
 
-
     test('equals propagates to multiple', () => {
 
         const foo = net.constant(1)
