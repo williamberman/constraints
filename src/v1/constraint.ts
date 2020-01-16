@@ -195,7 +195,7 @@ export const setEqual = (
     network: Network,
 ): {
     cells: Map<symbol, Cell>,
-    repositories: Map<symbol, Repository>
+    repositories: Map<symbol, Repository>,
 } => {
     const aCell = ensureGet(network.cells, aCellId)
     const bCell = ensureGet(network.cells, bCellId)
@@ -228,6 +228,6 @@ export const setEqual = (
 
     return {
         cells,
-        repositories: xRepositories
+        repositories: xRepositories,
     }
 }
