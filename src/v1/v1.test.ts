@@ -1,6 +1,6 @@
-import { stdLib } from './constraint'
 import { fromPartial } from './network'
 import { PersistentNetwork } from './persistent-network'
+import { stdLib } from './std-lib'
 
 describe('V1', () => {
     let net: PersistentNetwork
@@ -32,7 +32,6 @@ describe('V1', () => {
     })
 
     test('equals propagates to multiple', () => {
-
         const foo = net.constant(1)
         const bar = net.variable()
         const baz = net.variable()

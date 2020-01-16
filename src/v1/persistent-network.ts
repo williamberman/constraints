@@ -1,7 +1,7 @@
 import { Map } from 'immutable'
 
 import { constant, Repository, variable } from './cell'
-import { create, setEqual } from './constraint'
+import { awaken, create, setEqual } from './constraint'
 import { Network } from './network'
 import { ensureGet } from './utils'
 
@@ -58,11 +58,18 @@ export class PersistentNetwork {
 
     setEqual(aCellId: symbol, bCellId: symbol) {
         const { cells, repositories } = setEqual(aCellId, bCellId, this.network)
+        const newCells = this.network.cells.merge(cells)
+
+        const xRepositories = awaken(cells, Map(), {
+            ...this.network,
+            repositories,
+            cells: newCells
+        })
 
         this.network = {
             ...this.network,
-            cells,
-            repositories,
+            cells: newCells,
+            repositories: xRepositories,
         }
     }
 

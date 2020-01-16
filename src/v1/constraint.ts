@@ -23,38 +23,6 @@ export type Rule = Readonly<{
     update: (...args: number[]) => Record<symbol, number>,
 }>
 
-export const adder: ConstraintType = (() => {
-    const a = Symbol('a')
-    const b = Symbol('b')
-    const c = Symbol('c')
-
-    return {
-        id: Symbol(),
-        cellIds: [a, b, c],
-        rules: [
-            {
-                // a + b = c
-                input: [a, b],
-                update: (xa: number, xb: number) => ({ [c]: xa + xb }),
-            },
-            {
-                // a - c = b
-                input: [a, c],
-                update: (xa: number, xc: number) => ({ [b]: xa - xc }),
-            },
-            {
-                // c - b = a
-                input: [c, b],
-                update: (xc: number, xb: number) => ({ [a]: xc - xb }),
-            },
-        ],
-    }
-})()
-
-export const stdLib = Map<symbol, ConstraintType>([
-    [adder.id, adder],
-])
-
 export const create = (ct: ConstraintType): [Constraint, Map<symbol, Cell>, Map<symbol, Repository>] => {
     let cellMapping = Map<symbol, symbol>()
     let cells = Map<symbol, Cell>()
@@ -209,7 +177,7 @@ export const setEqual = (
         .filter((repo) => repo !== aRepository && repo !== bRepository)
         .set(newRepository.id, newRepository)
 
-    const cellsToAwaken = network.cells
+    const cells = network.cells
         .filter((cell) =>
             cell.repositoryId === aRepository.id ||
             cell.repositoryId === bRepository.id)
@@ -218,16 +186,8 @@ export const setEqual = (
             repositoryId: newRepository.id,
         }))
 
-    const cells = network.cells.merge(cellsToAwaken)
-
-    const xRepositories = awaken(cellsToAwaken, Map(), {
-        ...network,
-        cells,
-        repositories,
-    })
-
     return {
+        repositories,
         cells,
-        repositories: xRepositories,
     }
 }
