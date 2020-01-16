@@ -2,10 +2,36 @@ import { stdLib } from './constraint'
 import { fromPartial, PersistentNetwork } from './network'
 
 describe('V1', () => {
-    test('standard behavior', () => {
-        const net = new PersistentNetwork(fromPartial({
+    let net: PersistentNetwork
+    beforeEach(() => {
+        net = new PersistentNetwork(fromPartial({
             constraintTypes: stdLib,
         }))
+    })
+
+    test('constant', () => {
+        expect(net.valueOf(net.constant(2))).toEqual(2)
+    })
+
+    test('variable', () => {
+        expect(net.valueOf(net.variable())).toEqual(undefined)
+    })
+
+    test('equals', () => {
+        const foo = net.constant(1)
+        const bar = net.variable()
+
+        expect(net.valueOf(foo)).toEqual(1)
+        expect(net.valueOf(bar)).toEqual(undefined)
+
+        net.setEquals(foo, bar)
+
+        expect(net.valueOf(foo)).toEqual(1)
+        expect(net.valueOf(bar)).toEqual(1)
+    })
+
+
+    test('equals propagates to multiple', () => {
 
         const foo = net.constant(1)
         const bar = net.variable()
