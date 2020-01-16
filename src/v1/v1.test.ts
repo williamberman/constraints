@@ -1,5 +1,6 @@
 import { stdLib } from './constraint'
-import { fromPartial, PersistentNetwork } from './network'
+import { fromPartial } from './network'
+import { PersistentNetwork } from './persistent-network'
 
 describe('V1', () => {
     let net: PersistentNetwork
@@ -24,7 +25,7 @@ describe('V1', () => {
         expect(net.valueOf(foo)).toEqual(1)
         expect(net.valueOf(bar)).toEqual(undefined)
 
-        net.setEquals(foo, bar)
+        net.setEqual(foo, bar)
 
         expect(net.valueOf(foo)).toEqual(1)
         expect(net.valueOf(bar)).toEqual(1)
@@ -36,13 +37,13 @@ describe('V1', () => {
         const bar = net.variable()
         const baz = net.variable()
 
-        net.setEquals(bar, baz)
+        net.setEqual(bar, baz)
 
         expect(net.valueOf(foo)).toEqual(1)
         expect(net.valueOf(bar)).toEqual(undefined)
         expect(net.valueOf(baz)).toEqual(undefined)
 
-        net.setEquals(foo, bar)
+        net.setEqual(foo, bar)
 
         expect(net.valueOf(foo)).toEqual(1)
         expect(net.valueOf(bar)).toEqual(1)

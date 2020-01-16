@@ -1,7 +1,8 @@
 import { Map } from 'immutable'
 import { all, any } from 'ramda'
 
-import { Cell, Repository, variable } from './cell'
+import { Cell, mergeRepositories, Repository, variable } from './cell'
+import { Network } from './network'
 import { ensureGet } from './utils'
 
 export type ConstraintType = Readonly<{
@@ -81,12 +82,7 @@ export const create = (ct: ConstraintType): [Constraint, Map<symbol, Cell>, Map<
 export const awaken = (
     updatedCells: Map<symbol, Cell>,
     updated: Map<symbol, Repository>,
-    args: {
-        constraints: Map<symbol, Constraint>,
-        constraintTypes: Map<symbol, ConstraintType>,
-        repositories: Map<symbol, Repository>,
-        cells: Map<symbol, Cell>,
-    },
+    network: Network,
 ): Map<symbol, Repository> => {
     if (updatedCells.size === 0) {
         return updated
@@ -97,7 +93,7 @@ export const awaken = (
         constraintTypes,
         repositories,
         cells,
-    } = args
+    } = network
 
     let furtherAwaken = Map<symbol, Cell>()
     let newUpdated = updated
@@ -125,7 +121,7 @@ export const awaken = (
         })
     })
 
-    return awaken(furtherAwaken, newUpdated, args)
+    return awaken(furtherAwaken, newUpdated, network)
 }
 
 const runRule = ({
@@ -191,4 +187,47 @@ const runRule = ({
             })
         }
     }, Map<symbol, Repository>())
+}
+
+export const setEqual = (
+    aCellId: symbol,
+    bCellId: symbol,
+    network: Network,
+): {
+    cells: Map<symbol, Cell>,
+    repositories: Map<symbol, Repository>
+} => {
+    const aCell = ensureGet(network.cells, aCellId)
+    const bCell = ensureGet(network.cells, bCellId)
+
+    const aRepository = ensureGet(network.repositories, aCell.repositoryId)
+    const bRepository = ensureGet(network.repositories, bCell.repositoryId)
+
+    const newRepository = mergeRepositories(aRepository, bRepository)
+
+    const repositories = network.repositories
+        .filter((repo) => repo !== aRepository && repo !== bRepository)
+        .set(newRepository.id, newRepository)
+
+    const cellsToAwaken = network.cells
+        .filter((cell) =>
+            cell.repositoryId === aRepository.id ||
+            cell.repositoryId === bRepository.id)
+        .map((cell) => ({
+            ...cell,
+            repositoryId: newRepository.id,
+        }))
+
+    const cells = network.cells.merge(cellsToAwaken)
+
+    const xRepositories = awaken(cellsToAwaken, Map(), {
+        ...network,
+        cells,
+        repositories,
+    })
+
+    return {
+        cells,
+        repositories: xRepositories
+    }
 }
