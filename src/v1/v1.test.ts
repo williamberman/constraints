@@ -1,6 +1,7 @@
 import { fromPartial } from './network'
 import { PersistentNetwork } from './persistent-network'
 import { adder, stdLib } from './std-lib'
+import { makeTemperatureNetwork } from './temperature'
 
 describe('V1', () => {
     let net: PersistentNetwork
@@ -78,6 +79,27 @@ describe('V1', () => {
             net.setEqual(baz, net.constant(3))
 
             expect(net.valueOf(foo)).toEqual(1)
+        })
+    })
+
+    describe('Temperature', () => {
+        let farenheit: symbol
+        let centigrade: symbol
+
+        beforeEach(() => {
+            const syms = makeTemperatureNetwork(net)
+            farenheit = syms.farenheit
+            centigrade = syms.centigrade
+        })
+
+        test('centigrade->farenheit', () => {
+            net.setEqual(centigrade, net.constant(-40))
+            expect(net.valueOf(farenheit)).toEqual(-40)
+        })
+
+        test('farenheit->celcius', () => {
+            net.setEqual(farenheit, net.constant(50))
+            expect(net.valueOf(centigrade)).toEqual(10)
         })
     })
 })
