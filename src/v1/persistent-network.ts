@@ -4,6 +4,7 @@ import { constant, hasValue, variable } from './cell'
 import { makeConstraint } from './constraint'
 import { collapseDataFlow, DataFlow, makeDataFlow } from './data-flow'
 import { awaken, Network, setEqual } from './network'
+import { convertToSExp, SExp } from './symbolic-expression'
 import { ensureGet } from './utils'
 
 export class PersistentNetwork {
@@ -99,5 +100,9 @@ export class PersistentNetwork {
                 keepCells.map((xCellId) => ensureGet(this.network.cells, xCellId)),
             ) :
             df
+    }
+
+    what(cellId: symbol, keepCells?: symbol[]): SExp {
+        return convertToSExp(this.why(cellId, keepCells))
     }
 }

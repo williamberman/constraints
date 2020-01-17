@@ -93,11 +93,8 @@ describe('Provenance', () => {
         })
 
         test('Short Form', () => {
-            const one = net.constant(1, 'one')
-            const two = net.constant(2, 'two')
-
-            net.setEqual(foo, one)
-            net.setEqual(bar, two)
+            net.setEqual(foo, net.constant(1))
+            net.setEqual(bar, net.constant(2))
 
             const actual = net.why(baz, [foo, bar, baz])
 
@@ -126,6 +123,19 @@ describe('Provenance', () => {
             }
 
             expect(actual).toEqual(expected)
+        })
+
+        fdescribe('', () => {
+            test('Symbolic Form', () => {
+                net.setEqual(foo, net.constant(1))
+                net.setEqual(bar, net.constant(2))
+
+                const actual = net.what(baz, [foo, bar, baz])
+
+                const expected = ['=', 'baz', ['+', 'foo', 'bar']]
+
+                expect(actual).toEqual(expected)
+            })
         })
     })
 })
