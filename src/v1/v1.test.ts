@@ -1,4 +1,4 @@
-import { fromPartial } from './network'
+import { fromPartial } from './network/network'
 import { PersistentNetwork } from './persistent-network'
 import { adder, stdLib } from './std-lib'
 import { makeTemperatureNetwork } from './temperature'

@@ -1,7 +1,7 @@
 import { Map } from 'immutable'
 
-import { Cell, Repository } from './cell'
-import { Constraint, ConstraintType } from './constraint'
+import { Cell, Repository } from '../cell'
+import { Constraint, ConstraintType } from '../constraint'
 
 export type Network = Readonly<{
     repositories: Map<symbol, Repository>,

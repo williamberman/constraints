@@ -6,11 +6,23 @@ export type Repository = Readonly<{
 }>
 
 export type Content = Readonly<{
-    bound: true,
+    type: 'empty',
+} | {
+    type: 'constant',
     data: number,
 } | {
-    bound: false,
+    type: 'calculated',
+    data: number,
+    supplier: {
+        cellId: symbol,
+        constraintId: symbol,
+        ruleId: symbol,
+    },
 }>
+
+export const hasValue = ({ type }: Content): boolean => {
+    return type === 'constant' || type === 'calculated'
+}
 
 export type Cell = Readonly<{
     id: symbol,
@@ -27,7 +39,7 @@ const makeCell = (): [Cell, Repository] => {
         }, {
             id: repositoryId,
             content: {
-                bound: false,
+                type: 'empty',
             },
         },
     ]
@@ -41,7 +53,7 @@ export const constant = (n: number): [Cell, Repository] => {
         {
             ...repo,
             content: {
-                bound: true,
+                type: 'constant',
                 data: n,
             },
         },
@@ -52,16 +64,15 @@ export const variable = (): [Cell, Repository] => {
     return makeCell()
 }
 
-export const mergeRepositories = (aRepo: Repository, bRepo: Repository): Repository => {
+export const mergeRepositories = (aRepo: Repository, bRepo: Repository, ancestorRepo?: Repository): Repository => {
     const content: Content = (() => {
-        if (aRepo.content.bound && bRepo.content.bound) {
-            assert(aRepo.content.data === bRepo.content.data)
+        if (hasValue(aRepo.content) && hasValue(bRepo.content)) {
+            assert((aRepo.content as any).data === (bRepo.content as any).data)
 
-            // Could return either
+            return ancestorRepo?.content || aRepo.content
+        } else if (hasValue(aRepo.content)) {
             return aRepo.content
-        } else if (aRepo.content.bound) {
-            return aRepo.content
-        } else if (bRepo.content.bound) {
+        } else if (hasValue(bRepo.content)) {
             return bRepo.content
         } else {
             // Could return either

@@ -1,8 +1,8 @@
 import { Map } from 'immutable'
 
-import { constant, Repository, variable } from './cell'
-import { awaken, create, setEqual } from './constraint'
-import { Network } from './network'
+import { constant, hasValue, Repository, variable } from './cell'
+import { makeConstraint } from './constraint'
+import { awaken, Network, setEqual } from './network'
 import { ensureGet } from './utils'
 
 export class PersistentNetwork {
@@ -36,7 +36,7 @@ export class PersistentNetwork {
     create(constraintTypeId: symbol): symbol {
         const ct = ensureGet(this.network.constraintTypes, constraintTypeId)
 
-        const [constraint, cells, repos] = create(ct!)
+        const [constraint, cells, repos] = makeConstraint(ct!)
 
         this.network = {
             ...this.network,
@@ -77,8 +77,8 @@ export class PersistentNetwork {
     valueOf(cellId: symbol): number | undefined {
         const repo = this.getRepo(cellId)
 
-        return repo.content.bound ?
-            repo.content.data :
+        return hasValue(repo.content) ?
+            (repo.content as any).data :
             undefined
     }
 
