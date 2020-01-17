@@ -43,50 +43,31 @@ describe('Provenance', () => {
 
             const expected: DataFlow = {
                 cellId: baz,
-                children: List([
-                    {
-                        type: 'equal',
-                        node: {
-                            cellId: net.the(adder.cells.c, add),
-                            children: List([
-                                {
-                                    type: 'rule',
-                                    ruleId: adderId,
-                                    constraintId: add,
-                                    node: {
-                                        cellId: net.the(adder.cells.a, add),
-                                        children: List([
-                                            {
-                                                type: 'equal',
-                                                node: {
-                                                    cellId: foo,
-                                                    children: List(),
-                                                },
-                                            },
-                                        ]),
-                                    },
-                                },
-                                {
-                                    type: 'rule',
-                                    ruleId: adderId,
-                                    constraintId: add,
-                                    node: {
-                                        cellId: net.the(adder.cells.b, add),
-                                        children: List([
-                                            {
-                                                type: 'equal',
-                                                node: {
-                                                    cellId: bar,
-                                                    children: List(),
-                                                },
-                                            },
-                                        ]),
-                                    },
-                                },
-                            ]),
+                type: 'equal',
+                child: {
+                    type: 'rule',
+                    ruleId: adderId,
+                    constraintId: add,
+                    cellId: net.the(adder.cells.c, add),
+                    children: List([
+                        {
+                            type: 'equal',
+                            cellId: net.the(adder.cells.a, add),
+                            child: {
+                                type: 'terminal',
+                                cellId: foo,
+                            },
                         },
-                    },
-                ]),
+                        {
+                            type: 'equal',
+                            cellId: net.the(adder.cells.b, add),
+                            child: {
+                                type: 'terminal',
+                                cellId: bar,
+                            },
+                        },
+                    ]),
+                },
             }
 
             expect(actual).toEqual(expected)
@@ -100,24 +81,17 @@ describe('Provenance', () => {
 
             const expected: DataFlow = {
                 cellId: baz,
+                type: 'rule',
+                ruleId: adderId,
+                constraintId: add,
                 children: List([
                     {
-                        type: 'rule',
-                        ruleId: adderId,
-                        constraintId: add,
-                        node: {
-                            cellId: foo,
-                            children: List(),
-                        },
+                        type: 'terminal',
+                        cellId: foo,
                     },
                     {
-                        type: 'rule',
-                        ruleId: adderId,
-                        constraintId: add,
-                        node: {
-                            cellId: bar,
-                            children: List(),
-                        },
+                        type: 'terminal',
+                        cellId: bar,
                     },
                 ]),
             }
@@ -125,17 +99,15 @@ describe('Provenance', () => {
             expect(actual).toEqual(expected)
         })
 
-        fdescribe('', () => {
-            test('Symbolic Form', () => {
-                net.setEqual(foo, net.constant(1))
-                net.setEqual(bar, net.constant(2))
+        test('Symbolic Form', () => {
+            net.setEqual(foo, net.constant(1))
+            net.setEqual(bar, net.constant(2))
 
-                const actual = net.what(baz, [foo, bar, baz])
+            const actual = net.what(baz, [foo, bar, baz])
 
-                const expected = ['=', 'baz', ['+', 'foo', 'bar']]
+            const expected = ['=', 'baz', ['+', 'foo', 'bar']]
 
-                expect(actual).toEqual(expected)
-            })
+            expect(actual).toEqual(expected)
         })
     })
 })
