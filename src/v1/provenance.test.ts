@@ -13,66 +13,89 @@ describe('Provenance', () => {
         }))
     })
 
-    test('Addition Long Form', () => {
-        const foo = net.constant(1, 'foo')
-        const bar = net.constant(2, 'bar')
-        const baz = net.variable('baz')
+    describe('Addition', () => {
+        let foo: symbol
+        let bar: symbol
+        let baz: symbol
 
-        const add = net.create(adder.id, 'add')
+        let add: symbol
 
-        net.setEqual(net.the(adder.cells.a, add), foo)
-        net.setEqual(net.the(adder.cells.b, add), bar)
-        net.setEqual(net.the(adder.cells.c, add), baz)
+        beforeEach(() => {
+            foo = net.variable('foo')
+            bar = net.variable('bar')
+            baz = net.variable('baz')
 
-        const actual = net.why(baz)
-        const expected: DataFlow = {
-            cellId: baz,
-            children: List([
-                {
-                    type: 'equal',
-                    node: {
-                        cellId: net.the(adder.cells.c, add),
-                        children: List([
-                            {
-                                type: 'rule',
-                                ruleId: adder.rules.keySeq().get(0)!, // Bad way of identifying rule, but we'll manage
-                                constraintId: add,
-                                node: {
-                                    cellId: net.the(adder.cells.a, add),
-                                    children: List([
-                                        {
-                                            type: 'equal',
-                                            node: {
-                                                cellId: foo,
-                                                children: List(),
+            add = net.create(adder.id, 'add')
+
+            net.setEqual(net.the(adder.cells.a, add), foo)
+            net.setEqual(net.the(adder.cells.b, add), bar)
+            net.setEqual(net.the(adder.cells.c, add), baz)
+        })
+
+        test('Long Form', () => {
+            const one = net.constant(1, 'one')
+            const two = net.constant(2, 'two')
+
+            net.setEqual(foo, one)
+            net.setEqual(bar, two)
+
+            const actual = net.why(baz)
+
+            const expected: DataFlow = {
+                cellId: baz,
+                children: List([
+                    {
+                        type: 'equal',
+                        node: {
+                            cellId: net.the(adder.cells.c, add),
+                            children: List([
+                                {
+                                    type: 'rule',
+                                    // Bad way of identifying rule, but we'll manage
+                                    ruleId: adder.rules.keySeq().get(0)!,
+                                    constraintId: add,
+                                    node: {
+                                        cellId: net.the(adder.cells.a, add),
+                                        children: List([
+                                            {
+                                                type: 'equal',
+                                                node: {
+                                                    cellId: one,
+                                                    children: List(),
+                                                },
                                             },
-                                        },
-                                    ]),
+                                        ]),
+                                    },
                                 },
-                            },
-                            {
-                                type: 'rule',
-                                ruleId: adder.rules.keySeq().get(0)!, // Bad way of identifying rule, but we'll manage
-                                constraintId: add,
-                                node: {
-                                    cellId: net.the(adder.cells.b, add),
-                                    children: List([
-                                        {
-                                            type: 'equal',
-                                            node: {
-                                                cellId: bar,
-                                                children: List(),
+                                {
+                                    type: 'rule',
+                                    // Bad way of identifying rule, but we'll manage
+                                    ruleId: adder.rules.keySeq().get(0)!,
+                                    constraintId: add,
+                                    node: {
+                                        cellId: net.the(adder.cells.b, add),
+                                        children: List([
+                                            {
+                                                type: 'equal',
+                                                node: {
+                                                    cellId: two,
+                                                    children: List(),
+                                                },
                                             },
-                                        },
-                                    ]),
+                                        ]),
+                                    },
                                 },
-                            },
-                        ]),
+                            ]),
+                        },
                     },
-                },
-            ]),
-        }
+                ]),
+            }
 
-        expect(actual).toEqual(expected)
+            expect(actual).toEqual(expected)
+        })
+
+        test('Short Form', () => {
+            pending()
+        })
     })
 })

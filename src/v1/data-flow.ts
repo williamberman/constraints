@@ -73,7 +73,27 @@ export const makeDataFlow = (cell: Cell, network: Network): DataFlow => {
     }
 }
 
-// tslint:disable-next-line: variable-name
-export const collapseDataFlow = (df: DataFlow, _terminateAt: Cell[]): DataFlow => {
-    return df
+export const collapseDataFlow = (df: DataFlow, keep: Cell[]): DataFlow => {
+    const children = df.children.map((child) => {
+        switch (child.type) {
+            case ('equal'): {
+                if (keep.find(({ id }) => id === child.node.cellId)) {
+                    return List([child])
+                } else {
+                    return child.node.children
+                }
+            }
+            case ('rule'): {
+                return List([child])
+            }
+        }
+    })
+        .flatten()
+        .map((child: DataFlowEdge) => collapseDataFlow(child.node, keep))
+        .toList() as unknown as List<DataFlowEdge> // TODO
+
+    return {
+        ...df,
+        children,
+    }
 }

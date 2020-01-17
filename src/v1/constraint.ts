@@ -23,7 +23,7 @@ export type Rule = Readonly<{
 
 export const makeConstraint = (
     ct: ConstraintType,
-    name?: string
+    name?: string,
 ): [Constraint, Map<symbol, Cell>, Map<symbol, Repository>] => {
     let cellMapping = Map<symbol, symbol>()
     let cells = Map<symbol, Cell>()

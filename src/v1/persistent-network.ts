@@ -2,7 +2,7 @@ import { Map } from 'immutable'
 
 import { constant, hasValue, variable } from './cell'
 import { makeConstraint } from './constraint'
-import { DataFlow, makeDataFlow } from './data-flow'
+import { collapseDataFlow, DataFlow, makeDataFlow } from './data-flow'
 import { awaken, Network, setEqual } from './network'
 import { ensureGet } from './utils'
 
@@ -84,8 +84,15 @@ export class PersistentNetwork {
             undefined
     }
 
-    why(cellId: symbol): DataFlow {
+    why(cellId: symbol, keepCells?: symbol[]): DataFlow {
         const cell = ensureGet(this.network.cells, cellId)
-        return makeDataFlow(cell, this.network)
+        const df = makeDataFlow(cell, this.network)
+
+        return keepCells ?
+            collapseDataFlow(
+                df,
+                keepCells.map((xCellId) => ensureGet(this.network.cells, xCellId))
+            ) :
+            df
     }
 }
