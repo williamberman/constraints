@@ -20,6 +20,9 @@ describe('Provenance', () => {
 
         let add: symbol
 
+        // Bad way of identifying rule, but we'll manage
+        const adderId = adder.rules.keySeq().get(0)!
+
         beforeEach(() => {
             foo = net.variable('foo')
             bar = net.variable('bar')
@@ -33,11 +36,8 @@ describe('Provenance', () => {
         })
 
         test('Long Form', () => {
-            const one = net.constant(1, 'one')
-            const two = net.constant(2, 'two')
-
-            net.setEqual(foo, one)
-            net.setEqual(bar, two)
+            net.setEqual(foo, net.constant(1))
+            net.setEqual(bar, net.constant(2))
 
             const actual = net.why(baz)
 
@@ -51,8 +51,7 @@ describe('Provenance', () => {
                             children: List([
                                 {
                                     type: 'rule',
-                                    // Bad way of identifying rule, but we'll manage
-                                    ruleId: adder.rules.keySeq().get(0)!,
+                                    ruleId: adderId,
                                     constraintId: add,
                                     node: {
                                         cellId: net.the(adder.cells.a, add),
@@ -60,7 +59,7 @@ describe('Provenance', () => {
                                             {
                                                 type: 'equal',
                                                 node: {
-                                                    cellId: one,
+                                                    cellId: foo,
                                                     children: List(),
                                                 },
                                             },
@@ -69,8 +68,7 @@ describe('Provenance', () => {
                                 },
                                 {
                                     type: 'rule',
-                                    // Bad way of identifying rule, but we'll manage
-                                    ruleId: adder.rules.keySeq().get(0)!,
+                                    ruleId: adderId,
                                     constraintId: add,
                                     node: {
                                         cellId: net.the(adder.cells.b, add),
@@ -78,7 +76,7 @@ describe('Provenance', () => {
                                             {
                                                 type: 'equal',
                                                 node: {
-                                                    cellId: two,
+                                                    cellId: bar,
                                                     children: List(),
                                                 },
                                             },
@@ -95,7 +93,39 @@ describe('Provenance', () => {
         })
 
         test('Short Form', () => {
-            pending()
+            const one = net.constant(1, 'one')
+            const two = net.constant(2, 'two')
+
+            net.setEqual(foo, one)
+            net.setEqual(bar, two)
+
+            const actual = net.why(baz, [foo, bar, baz])
+
+            const expected: DataFlow = {
+                cellId: baz,
+                children: List([
+                    {
+                        type: 'rule',
+                        ruleId: adderId,
+                        constraintId: add,
+                        node: {
+                            cellId: foo,
+                            children: List(),
+                        },
+                    },
+                    {
+                        type: 'rule',
+                        ruleId: adderId,
+                        constraintId: add,
+                        node: {
+                            cellId: bar,
+                            children: List(),
+                        },
+                    },
+                ]),
+            }
+
+            expect(actual).toEqual(expected)
         })
     })
 })

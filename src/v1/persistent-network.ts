@@ -91,7 +91,7 @@ export class PersistentNetwork {
         return keepCells ?
             collapseDataFlow(
                 df,
-                keepCells.map((xCellId) => ensureGet(this.network.cells, xCellId))
+                keepCells.map((xCellId) => ensureGet(this.network.cells, xCellId)),
             ) :
             df
     }
