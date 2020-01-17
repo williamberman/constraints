@@ -10,8 +10,8 @@ export class PersistentNetwork {
     constructor(private network: Network) {
     }
 
-    constant(n: number): symbol {
-        const [cell, repo] = constant(n)
+    constant(n: number, name?: string): symbol {
+        const [cell, repo] = constant(n, name)
 
         this.network = {
             ...this.network,
@@ -22,8 +22,8 @@ export class PersistentNetwork {
         return cell.id
     }
 
-    variable(): symbol {
-        const [cell, repo] = variable()
+    variable(name?: string): symbol {
+        const [cell, repo] = variable(name)
 
         this.network = {
             ...this.network,
@@ -34,10 +34,10 @@ export class PersistentNetwork {
         return cell.id
     }
 
-    create(constraintTypeId: symbol): symbol {
+    create(constraintTypeId: symbol, name?: string): symbol {
         const ct = ensureGet(this.network.constraintTypes, constraintTypeId)
 
-        const [constraint, cells, repos] = makeConstraint(ct!)
+        const [constraint, cells, repos] = makeConstraint(ct!, name)
 
         this.network = {
             ...this.network,

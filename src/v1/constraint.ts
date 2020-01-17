@@ -21,7 +21,10 @@ export type Rule = Readonly<{
     update: (...args: number[]) => Record<symbol, number>,
 }>
 
-export const makeConstraint = (ct: ConstraintType): [Constraint, Map<symbol, Cell>, Map<symbol, Repository>] => {
+export const makeConstraint = (
+    ct: ConstraintType,
+    name?: string
+): [Constraint, Map<symbol, Cell>, Map<symbol, Repository>] => {
     let cellMapping = Map<symbol, symbol>()
     let cells = Map<symbol, Cell>()
     let repos = Map<symbol, Repository>()
@@ -36,7 +39,7 @@ export const makeConstraint = (ct: ConstraintType): [Constraint, Map<symbol, Cel
 
     return [
         {
-            id: Symbol(),
+            id: Symbol(name),
             constraintTypeId: ct.id,
             cellMapping,
         },

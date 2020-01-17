@@ -10,6 +10,9 @@ export type Content = Readonly<{
 } | {
     type: 'constant',
     data: number,
+    supplier: {
+        cellId: symbol,
+    },
 } | {
     type: 'calculated',
     data: number,
@@ -29,12 +32,12 @@ export type Cell = Readonly<{
     repositoryId: symbol,
 }>
 
-const makeCell = (): [Cell, Repository] => {
+const makeCell = (name?: string): [Cell, Repository] => {
     const repositoryId = Symbol()
 
     return [
         {
-            id: Symbol(),
+            id: Symbol(name),
             repositoryId,
         }, {
             id: repositoryId,
@@ -45,8 +48,8 @@ const makeCell = (): [Cell, Repository] => {
     ]
 }
 
-export const constant = (n: number): [Cell, Repository] => {
-    const [cell, repo] = makeCell()
+export const constant = (n: number, name?: string): [Cell, Repository] => {
+    const [cell, repo] = makeCell(name)
 
     return [
         cell,
@@ -55,13 +58,16 @@ export const constant = (n: number): [Cell, Repository] => {
             content: {
                 type: 'constant',
                 data: n,
+                supplier: {
+                    cellId: cell.id,
+                },
             },
         },
     ]
 }
 
-export const variable = (): [Cell, Repository] => {
-    return makeCell()
+export const variable = (name?: string): [Cell, Repository] => {
+    return makeCell(name)
 }
 
 export const mergeRepositories = (aRepo: Repository, bRepo: Repository, ancestorRepo?: Repository): Repository => {
