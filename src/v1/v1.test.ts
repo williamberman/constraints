@@ -97,7 +97,7 @@ describe('V1', () => {
             expect(net.valueOf(farenheit)).toEqual(-40)
         })
 
-        test('farenheit->celcius', () => {
+        test('farenheit->centigrade', () => {
             net.setEqual(farenheit, net.constant(50))
             expect(net.valueOf(centigrade)).toEqual(10)
         })
