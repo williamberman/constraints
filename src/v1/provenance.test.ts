@@ -99,15 +99,29 @@ describe('Provenance', () => {
             expect(actual).toEqual(expected)
         })
 
-        test('Symbolic Form', () => {
-            net.setEqual(foo, net.constant(1))
-            net.setEqual(bar, net.constant(2))
+        describe('Symbolic Form', () => {
+            test('Forwards', () => {
+                net.setEqual(foo, net.constant(1))
+                net.setEqual(bar, net.constant(2))
 
-            const actual = net.what(baz, [foo, bar, baz])
+                const actual = net.what(baz, [foo, bar, baz])
 
-            const expected = ['=', 'baz', ['+', 'foo', 'bar']]
+                const expected = ['=', 'baz', ['+', 'foo', 'bar']]
 
-            expect(actual).toEqual(expected)
+                expect(actual).toEqual(expected)
+            })
+
+            test('Backwards', () => {
+                net.setEqual(foo, net.constant(1))
+                net.setEqual(baz, net.constant(3))
+
+                const actual = net.what(bar, [foo, bar, baz])
+
+                const expected = ['=', 'bar', ['-', 'baz', 'foo']]
+
+                expect(actual).toEqual(expected)
+            })
         })
+
     })
 })

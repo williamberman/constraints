@@ -130,15 +130,38 @@ export const collapseDataFlow = (df: DataFlow, keepCells: symbol[]): DataFlow =>
     }
 }
 
-// TODO: This shows how the DataFlow is slightly incorrectly represented.
-// For a given DataFlow, we should know _exactly_ how it is calculated on
-// the given DataFlow and not on the child.
-//
-// I.e. If the DataFlow was calculated via an equal, then the DataFlow
-// was not _also_ calculated via a rule. It is _possible_ that the cell
-// could be calculated by either, but each would be represented by its
-// own independent DataFlow.
-// tslint:disable-next-line: variable-name
-export const convertToSExp = (_df: DataFlow, _network: Network): SExp => {
-    return []
+export const convertToSExp = (df: DataFlow, network: Network): SExp => {
+    const cell = ensureGet(network.cells, df.cellId)
+    const readableId = (cell.id as any).description
+
+    switch (df.type) {
+        case ('equal'): {
+            return ['=', readableId, convertToSExp(df.child, network)]
+        }
+        case ('rule'): {
+            const repo = ensureGet(network.repositories, cell.repositoryId)
+            switch (repo.content.type) {
+                case ('empty'): {
+                    return ['=', readableId, '<Cannot Compute>']
+                }
+                case ('constant'): {
+                    return readableId
+                }
+                case ('calculated'): {
+                    const constraint = ensureGet(network.constraints, repo.content.supplier.constraintId)
+                    const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
+                    const rule = ensureGet(constraintType.rules, repo.content.supplier.ruleId)
+
+                    // Ordering here is implicit. Not sure if it will stay consistent
+                    const children = df.children.map((child) => convertToSExp(child, network))
+                    const results = rule.toSExp(...children)
+
+                    return ['=', readableId, results]
+                }
+            }
+        }
+        case ('terminal'): {
+            return readableId
+        }
+    }
 }
