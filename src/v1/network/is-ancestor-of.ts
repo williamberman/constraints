@@ -1,5 +1,3 @@
-import { any, identity } from 'ramda'
-
 import { Cell } from '../cell'
 import { ensureGet } from '../utils'
 import { Network } from './network'
@@ -26,11 +24,10 @@ export const isAncestorOf = ({
         const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
         const rule = ensureGet(constraintType.rules, repo.content.supplier.ruleId)
 
-        const parentResults = rule.input
+        return rule.input
             .map((idInConstraint) => ensureGet(constraint.cellMapping, idInConstraint))
             .map((cellId) => ensureGet(network.cells, cellId))
             .map((cell) => isAncestorOf({ isAncestor, of: cell, network }))
-
-        return any(identity, parentResults)
+            .reduce((acc: boolean, cur) => acc || cur, false)
     }
 }

@@ -2,6 +2,7 @@ import { Map } from 'immutable'
 
 import { constant, hasValue, variable } from './cell'
 import { makeConstraint } from './constraint'
+import { DataFlow, makeDataFlow } from './data-flow'
 import { awaken, Network, setEqual } from './network'
 import { ensureGet } from './utils'
 
@@ -81,5 +82,10 @@ export class PersistentNetwork {
         return hasValue(repo.content) ?
             (repo.content as any).data :
             undefined
+    }
+
+    why(cellId: symbol): DataFlow {
+        const cell = ensureGet(this.network.cells, cellId)
+        return makeDataFlow(cell, this.network)
     }
 }

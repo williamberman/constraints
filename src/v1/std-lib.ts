@@ -1,4 +1,4 @@
-import { Map } from 'immutable'
+import { List, Map } from 'immutable'
 
 import { ConstraintType } from './constraint'
 
@@ -18,17 +18,17 @@ export const adder: ConstraintType = (() => {
         rules: Map([
             [id1, {
                 id: id1,
-                input: [a, b],
+                input: List([a, b]),
                 update: (xa: number, xb: number) => ({ [c]: xa + xb }),
             }],
             [id2, {
                 id: id2,
-                input: [a, c],
+                input: List([a, c]),
                 update: (xa: number, xc: number) => ({ [b]: xc - xa }),
             }],
             [id3, {
                 id: id3,
-                input: [c, b],
+                input: List([c, b]),
                 update: (xc: number, xb: number) => ({ [a]: xc - xb }),
             }],
         ]),
@@ -53,22 +53,22 @@ export const multiplier: ConstraintType = (() => {
         rules: Map([
             [id1, {
                 id: id1,
-                input: [a],
+                input: List([a]),
                 update: (xa: number) => xa === 0 ? { [c]: 0 } : {},
             }],
             [id2, {
                 id: id2,
-                input: [b],
+                input: List([b]),
                 update: (xb: number) => xb === 0 ? { [c]: 0 } : {},
             }],
             [id3, {
                 id: id3,
-                input: [a, b],
+                input: List([a, b]),
                 update: (xa: number, xb: number) => ({ [c]: xa * xb }),
             }],
             [id4, {
                 id: id4,
-                input: [a, c],
+                input: List([a, c]),
                 update: (xa: number, xc: number) =>
                     (xa !== 0 && xc % xa === 0) ?
                         { [b]: xc / xa } :
@@ -76,7 +76,7 @@ export const multiplier: ConstraintType = (() => {
             }],
             [id5, {
                 id: id5,
-                input: [b, c],
+                input: List([b, c]),
                 update: (xb: number, xc: number) =>
                     (xb !== 0 && xc % xb === 0) ?
                         { [a]: xc / xb } :

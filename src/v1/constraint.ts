@@ -1,4 +1,4 @@
-import { Map } from 'immutable'
+import { List, Map } from 'immutable'
 
 import { Cell, Repository, variable } from './cell'
 
@@ -17,7 +17,7 @@ export type Constraint = Readonly<{
 export type Rule = Readonly<{
     // update should have the same arity as input's length
     id: symbol,
-    input: symbol[],
+    input: List<symbol>,
     update: (...args: number[]) => Record<symbol, number>,
 }>
 

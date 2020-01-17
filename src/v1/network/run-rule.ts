@@ -26,9 +26,9 @@ export const runRule = ({
     const inputsAreUpdated = any((cellId) => {
         const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
         return updatedCells.has(cell.id)
-    }, rule.input)
+    }, rule.input.toArray())
 
-    const allContentsBound = all(hasValue, contents)
+    const allContentsBound = all(hasValue, contents.toArray())
 
     const theUpdate = (() => {
         if (inputsAreUpdated && allContentsBound) {
