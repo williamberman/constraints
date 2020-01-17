@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 
 export type Repository = Readonly<{
-    id: symbol
+    id: symbol,
     content: Content,
 }>
 
@@ -30,6 +30,7 @@ export const hasValue = ({ type }: Content): boolean => {
 export type Cell = Readonly<{
     id: symbol,
     repositoryId: symbol,
+    external: boolean,
 }>
 
 const makeCell = (name?: string): [Cell, Repository] => {
@@ -39,6 +40,7 @@ const makeCell = (name?: string): [Cell, Repository] => {
         {
             id: Symbol(name),
             repositoryId,
+            external: false,
         }, {
             id: repositoryId,
             content: {

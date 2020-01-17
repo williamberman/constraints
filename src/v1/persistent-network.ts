@@ -25,9 +25,14 @@ export class PersistentNetwork {
     variable(name?: string): symbol {
         const [cell, repo] = variable(name)
 
+        const xCell = {
+            ...cell,
+            external: true,
+        }
+
         this.network = {
             ...this.network,
-            cells: this.network.cells.set(cell.id, cell),
+            cells: this.network.cells.set(xCell.id, xCell),
             repositories: this.network.repositories.set(repo.id, repo),
         }
 
