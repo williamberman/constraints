@@ -2,9 +2,9 @@ import { Map } from 'immutable'
 
 import { constant, hasValue, variable } from './cell'
 import { makeConstraint } from './constraint'
-import { collapseDataFlow, DataFlow, makeDataFlow } from './data-flow'
+import { collapseDataFlow, convertToSExp, DataFlow, makeDataFlow } from './data-flow'
 import { awaken, Network, setEqual } from './network'
-import { convertToSExp, SExp } from './symbolic-expression'
+import { SExp } from './symbolic-expression'
 import { ensureGet } from './utils'
 
 export class PersistentNetwork {
@@ -103,6 +103,6 @@ export class PersistentNetwork {
     }
 
     what(cellId: symbol, keepCells?: symbol[]): SExp {
-        return convertToSExp(this.why(cellId, keepCells))
+        return convertToSExp(this.why(cellId, keepCells), this.network)
     }
 }

@@ -1,6 +1,10 @@
 import { List, Map } from 'immutable'
 
 import { ConstraintType } from './constraint'
+import { SExp } from './symbolic-expression'
+
+// TODO these should probably be compiled from a pure symbolic
+// representation
 
 // a + b = c
 export const adder: ConstraintType = (() => {
@@ -20,16 +24,19 @@ export const adder: ConstraintType = (() => {
                 id: id1,
                 input: List([a, b]),
                 update: (xa: number, xb: number) => ({ [c]: xa + xb }),
+                toSExp: (xa: SExp, xb: SExp) => ['+', xa, xb],
             }],
             [id2, {
                 id: id2,
                 input: List([a, c]),
                 update: (xa: number, xc: number) => ({ [b]: xc - xa }),
+                toSExp: (xa: SExp, xc: SExp) => ['-', xc, xa],
             }],
             [id3, {
                 id: id3,
                 input: List([c, b]),
                 update: (xc: number, xb: number) => ({ [a]: xc - xb }),
+                toSExp: (xc: SExp, xb: SExp) => ['-', xc, xb],
             }],
         ]),
     }
@@ -55,16 +62,19 @@ export const multiplier: ConstraintType = (() => {
                 id: id1,
                 input: List([a]),
                 update: (xa: number) => xa === 0 ? { [c]: 0 } : {},
+                toSExp: (xa: SExp) => ['*', xa, '_'],
             }],
             [id2, {
                 id: id2,
                 input: List([b]),
                 update: (xb: number) => xb === 0 ? { [c]: 0 } : {},
+                toSExp: (xb: SExp) => ['*', '_', xb],
             }],
             [id3, {
                 id: id3,
                 input: List([a, b]),
                 update: (xa: number, xb: number) => ({ [c]: xa * xb }),
+                toSExp: (xa: SExp, xb: SExp) => ['*', xa, xb],
             }],
             [id4, {
                 id: id4,
@@ -73,6 +83,7 @@ export const multiplier: ConstraintType = (() => {
                     (xa !== 0 && xc % xa === 0) ?
                         { [b]: xc / xa } :
                         { },
+                toSExp: (xa: SExp, xc: SExp) => ['/', xc, xa],
             }],
             [id5, {
                 id: id5,
@@ -81,6 +92,7 @@ export const multiplier: ConstraintType = (() => {
                     (xb !== 0 && xc % xb === 0) ?
                         { [a]: xc / xb } :
                         { },
+                toSExp: (xb: SExp, xc: SExp) => ['/', xc, xb],
             }],
         ]),
     }

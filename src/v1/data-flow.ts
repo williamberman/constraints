@@ -2,6 +2,7 @@ import { List } from 'immutable'
 
 import { Cell } from './cell'
 import { Network } from './network/network'
+import { SExp } from './symbolic-expression'
 import { ensureGet } from './utils'
 
 export type DataFlow = Readonly<{
@@ -143,4 +144,17 @@ const extractEquivalences = (
         edges: newEdges.concat(childrenEdges),
     }
 
+}
+
+// TODO: This shows how the DataFlow is slightly incorrectly represented.
+// For a given DataFlow, we should know _exactly_ how it is calculated on
+// the given DataFlow and not on the child.
+//
+// I.e. If the DataFlow was calculated via an equal, then the DataFlow
+// was not _also_ calculated via a rule. It is _possible_ that the cell
+// could be calculated by either, but each would be represented by its
+// own independent DataFlow.
+// tslint:disable-next-line: variable-name
+export const convertToSExp = (_df: DataFlow, _network: Network): SExp => {
+    return []
 }

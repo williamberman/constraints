@@ -1,6 +1,7 @@
 import { List, Map } from 'immutable'
 
 import { Cell, Repository, variable } from './cell'
+import { SExp } from './symbolic-expression'
 
 export type ConstraintType = Readonly<{
     id: symbol,
@@ -15,10 +16,11 @@ export type Constraint = Readonly<{
 }>
 
 export type Rule = Readonly<{
-    // update should have the same arity as input's length
     id: symbol,
+    // update and toSExp should have the same arity as input's length
     input: List<symbol>,
     update: (...args: number[]) => Record<symbol, number>,
+    toSExp: (...args: SExp[]) => SExp,
 }>
 
 export const makeConstraint = (
