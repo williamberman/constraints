@@ -5,7 +5,7 @@ import { Cell, Repository, variable } from './cell'
 export type ConstraintType = Readonly<{
     id: symbol,
     cells: Record<string, symbol>,
-    rules: Rule[],
+    rules: Map<symbol, Rule>,
 }>
 
 export type Constraint = Readonly<{
@@ -16,6 +16,7 @@ export type Constraint = Readonly<{
 
 export type Rule = Readonly<{
     // update should have the same arity as input's length
+    id: symbol,
     input: symbol[],
     update: (...args: number[]) => Record<symbol, number>,
 }>

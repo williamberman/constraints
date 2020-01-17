@@ -8,26 +8,30 @@ export const adder: ConstraintType = (() => {
     const b = Symbol('b')
     const c = Symbol('c')
 
+    const id1 = Symbol('a + b = c')
+    const id2 = Symbol('c - a = b')
+    const id3 = Symbol('c - b = a')
+
     return {
         id: Symbol('adder'),
         cells: { a, b, c },
-        rules: [
-            {
-                // a + b = c
+        rules: Map([
+            [id1, {
+                id: id1,
                 input: [a, b],
                 update: (xa: number, xb: number) => ({ [c]: xa + xb }),
-            },
-            {
-                // c - a = b
+            }],
+            [id2, {
+                id: id2,
                 input: [a, c],
                 update: (xa: number, xc: number) => ({ [b]: xc - xa }),
-            },
-            {
-                // c - b = a
+            }],
+            [id3, {
+                id: id3,
                 input: [c, b],
                 update: (xc: number, xb: number) => ({ [a]: xc - xb }),
-            },
-        ],
+            }],
+        ]),
     }
 })()
 
@@ -37,42 +41,48 @@ export const multiplier: ConstraintType = (() => {
     const b = Symbol('b')
     const c = Symbol('c')
 
+    const id1 = Symbol('(a is 0) * b = 0')
+    const id2 = Symbol('a * (b is 0) = 0')
+    const id3 = Symbol('a * b = c')
+    const id4 = Symbol('c / a = b')
+    const id5 = Symbol('c / b = a')
+
     return {
         id: Symbol('multiplier'),
         cells: { a, b, c },
-        rules: [
-            {
-                // 0 * b = 0
+        rules: Map([
+            [id1, {
+                id: id1,
                 input: [a],
                 update: (xa: number) => xa === 0 ? { [c]: 0 } : {},
-            },
-            {
-                // a * 0 = 0
+            }],
+            [id2, {
+                id: id2,
                 input: [b],
                 update: (xb: number) => xb === 0 ? { [c]: 0 } : {},
-            },
-            {
-                // a * b = c
+            }],
+            [id3, {
+                id: id3,
                 input: [a, b],
                 update: (xa: number, xb: number) => ({ [c]: xa * xb }),
-            },
-            {
-                // c / a = b
+            }],
+            [id4, {
+                id: id4,
                 input: [a, c],
                 update: (xa: number, xc: number) =>
                     (xa !== 0 && xc % xa === 0) ?
                         { [b]: xc / xa } :
                         { },
-            },
-            {
-                // c / b = a
+            }],
+            [id5, {
+                id: id5,
                 input: [b, c],
                 update: (xb: number, xc: number) =>
                     (xb !== 0 && xc % xb === 0) ?
                         { [a]: xc / xb } :
                         { },
-            },
-        ],
+            }],
+        ]),
     }
 })()
 

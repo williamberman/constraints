@@ -61,8 +61,13 @@ export const runRule = ({
             return acc.set(repo.id, {
                 ...repo,
                 content: {
-                    type: 'constant', // TODO type needs to be figured out
+                    type: 'calculated',
                     data: theUpdateData,
+                    supplier: {
+                        cellId: cell.id,
+                        constraintId: constraint.id,
+                        ruleId: rule.id,
+                    },
                 },
             })
         }
