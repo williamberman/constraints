@@ -1,6 +1,6 @@
 import { Map } from 'immutable'
 
-import { constant, hasValue, Repository, variable } from './cell'
+import { constant, hasValue, variable } from './cell'
 import { makeConstraint } from './constraint'
 import { awaken, Network, setEqual } from './network'
 import { ensureGet } from './utils'
@@ -75,18 +75,11 @@ export class PersistentNetwork {
 
     // undefined indicates not bound
     valueOf(cellId: symbol): number | undefined {
-        const repo = this.getRepo(cellId)
+        const cell = ensureGet(this.network.cells, cellId)
+        const repo = ensureGet(this.network.repositories, cell.repositoryId)
 
         return hasValue(repo.content) ?
             (repo.content as any).data :
             undefined
-    }
-
-    private getRepo(cellId: symbol, repositories?: Map<symbol, Repository>): Repository {
-        repositories = repositories || this.network.repositories
-        const cell = ensureGet(this.network.cells, cellId)
-        const repo = ensureGet(repositories, cell.repositoryId)
-
-        return repo
     }
 }
