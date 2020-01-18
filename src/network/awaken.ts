@@ -1,8 +1,8 @@
 import { Map } from 'immutable'
 
+import { Network } from '.'
 import { Cell, Repository } from '../cell'
-import { Network } from './../network'
-import { ensureGet } from './../utils'
+import { ensureGet } from '../utils'
 import { runRule } from './run-rule'
 
 export const awaken = (
