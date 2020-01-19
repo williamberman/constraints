@@ -33,120 +33,148 @@ export type DataFlow = Readonly<{
 export const makeDataFlow = (cell: Cell, network: Network): DataFlow => {
     const repo = ensureGet(network.repositories, cell.repositoryId)
 
-    const df: DataFlow = (() => {
-        switch (repo.content.type) {
-            case ('empty'): {
+    switch (repo.content.type) {
+        case ('empty'): {
+            return {
+                cellId: cell.id,
+                type: 'terminal' as 'terminal',
+            }
+        }
+        case ('constant'): {
+            if (repo.content.supplier.cellId === cell.id) {
                 return {
                     cellId: cell.id,
                     type: 'terminal' as 'terminal',
                 }
-            }
-            case ('constant'): {
-                if (repo.content.supplier.cellId === cell.id) {
-                    return {
-                        cellId: cell.id,
-                        type: 'terminal' as 'terminal',
-                    }
-                } else {
-                    return {
-                        cellId: cell.id,
-                        type: 'equal' as 'equal',
-                        child: makeDataFlow(
-                            ensureGet(network.cells, repo.content.supplier.cellId),
-                            network,
-                        ),
-                    }
-                }
-            }
-            case ('inconsistency'): {
-                const children = repo.content.suppliers
-                    .filter(({ supplier: { cellId: xCellId } }) => xCellId !== cell.id)
-                    .map(
-                        ({ data, supplier }) => {
-                            // In order to avoid the child dataflow from depending on
-                            // the dataflow we are currently constructing, fake the
-                            // repository being a constant
-                            const repositories = network.repositories.set(repo.id, {
-                                id: repo.id,
-                                content: {
-                                    type: 'constant',
-                                    data,
-                                    supplier,
-                                },
-                            })
-
-                            return makeDataFlow(
-                                ensureGet(network.cells, supplier.cellId),
-                                {
-                                    ...network,
-                                    repositories,
-                                })
-                        })
-
+            } else {
                 return {
                     cellId: cell.id,
-                    type: 'inconsistent equal' as 'inconsistent equal',
-                    children,
+                    type: 'equal' as 'equal',
+                    child: makeDataFlow(
+                        ensureGet(network.cells, repo.content.supplier.cellId),
+                        network,
+                    ),
                 }
             }
-            // case ('calculated'): {
-            //     if (repo.content.supplier.cellId === cell.id) {
-            //         const constraint = ensureGet(network.constraints, repo.content.supplier.constraintId)
-            //         const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
-            //         const rule = ensureGet(constraintType.rules, repo.content.supplier.ruleId)
-            //         const children = rule.input
-            //             .map((idInConstraint) => ensureGet(constraint.cellMapping, idInConstraint))
-            //             .map((xCellId) => ensureGet(network.cells, xCellId))
-            //             .map((childCell) => makeDataFlow(childCell, network))
-
-            //         return {
-            //             cellId: cell.id,
-            //             type: 'rule' as 'rule',
-            //             ruleId: rule.id,
-            //             constraintId: constraint.id,
-            //             children,
-            //         }
-            //     } else {
-            //         return {
-            //             cellId: cell.id,
-            //             type: 'equal' as 'equal',
-            //             child: makeDataFlow(
-            //                 ensureGet(network.cells, repo.content.supplier.cellId),
-            //                 network,
-            //             ),
-            //         }
-            //     }
-            // }
         }
-    })()
+        case ('inconsistency'): {
+            const children = repo.content.suppliers
+                .filter(({ supplier: { cellId: xCellId } }) => xCellId !== cell.id)
+                .map(
+                    ({ data, supplier }) => {
+                        // In order to avoid the child dataflow from depending on
+                        // the dataflow we are currently constructing, fake the
+                        // repository being a constant
+                        const repositories = network.repositories.set(repo.id, {
+                            id: repo.id,
+                            content: {
+                                type: 'constant',
+                                data,
+                                supplier,
+                            },
+                        })
 
-    // Favor using external cells from the same repository when
-    // at a leaf node in graph
-    const externalCell = network.cells.find(
-        ({ repositoryId, external }) => repositoryId === repo.id && external)
+                        return makeDataFlow(
+                            ensureGet(network.cells, supplier.cellId),
+                            {
+                                ...network,
+                                repositories,
+                            })
+                    })
 
-    const cellId = df.type === 'terminal' && externalCell ?
-        externalCell.id :
-        cell.id
+            return {
+                cellId: cell.id,
+                type: 'inconsistent equal' as 'inconsistent equal',
+                children,
+            }
+        }
+        // case ('calculated'): {
+        //     if (repo.content.supplier.cellId === cell.id) {
+        //         const constraint = ensureGet(network.constraints, repo.content.supplier.constraintId)
+        //         const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
+        //         const rule = ensureGet(constraintType.rules, repo.content.supplier.ruleId)
+        //         const children = rule.input
+        //             .map((idInConstraint) => ensureGet(constraint.cellMapping, idInConstraint))
+        //             .map((xCellId) => ensureGet(network.cells, xCellId))
+        //             .map((childCell) => makeDataFlow(childCell, network))
 
-    return {
-        ...df,
-        cellId,
+        //         return {
+        //             cellId: cell.id,
+        //             type: 'rule' as 'rule',
+        //             ruleId: rule.id,
+        //             constraintId: constraint.id,
+        //             children,
+        //         }
+        //     } else {
+        //         return {
+        //             cellId: cell.id,
+        //             type: 'equal' as 'equal',
+        //             child: makeDataFlow(
+        //                 ensureGet(network.cells, repo.content.supplier.cellId),
+        //                 network,
+        //             ),
+        //         }
+        //     }
+        // }
+    }
+}
+
+export const useExternalCells = (df: DataFlow, network: Network): DataFlow => {
+    const cell = ensureGet(network.cells, df.cellId)
+    const repo = ensureGet(network.repositories, cell.repositoryId)
+
+    const recur = (children: List<DataFlow>) => {
+        const xChildren = children.map((child) => useExternalCells(child, network))
+
+        return {
+            ...df,
+            children: xChildren,
+        }
+    }
+
+    switch (df.type) {
+        case ('terminal'): {
+
+            const externalCell = network.cells.find(
+                ({ repositoryId, external }) => repositoryId === repo.id && external)
+
+            const cellId = df.type === 'terminal' && externalCell ?
+                externalCell.id :
+                cell.id
+
+            return {
+                ...df,
+                cellId,
+            }
+        }
+        case ('equal'): {
+            return useExternalCells(df.child, network)
+        }
+        case ('rule'): {
+            return recur(df.children)
+        }
+        case ('inconsistent equal'): {
+            return recur(df.children)
+        }
+        case ('inconsistent rule'): {
+            return recur(df.children)
+        }
     }
 }
 
 export const collapseDataFlow = (df: DataFlow, keepCells: symbol[]): DataFlow => {
+    const recur = (children: List<DataFlow>) => {
+        const xChildren = children.map((child) => collapseDataFlow(child, keepCells))
+
+        return {
+            ...df,
+            children: xChildren,
+        }
+    }
+
     switch (df.type) {
         case ('terminal'): {
             return df
-        }
-        case ('rule'): {
-            const children = df.children.map((child) => collapseDataFlow(child, keepCells))
-
-            return {
-                ...df,
-                children,
-            }
         }
         case ('equal'): {
             const child = collapseDataFlow(df.child, keepCells)
@@ -168,19 +196,21 @@ export const collapseDataFlow = (df: DataFlow, keepCells: symbol[]): DataFlow =>
                 }
             }
         }
+        case ('rule'): {
+            return recur(df.children)
+        }
         case ('inconsistent equal'): {
-            // TODO
-            throw new Error('assert false')
+            return recur(df.children)
         }
         case ('inconsistent rule'): {
-            // TODO
-            throw new Error('assert false')
+            return recur(df.children)
         }
     }
 }
 
 export const convertToSExp = (df: DataFlow, network: Network): SExp => {
     const cell = ensureGet(network.cells, df.cellId)
+    const repo = ensureGet(network.repositories, cell.repositoryId)
     const readableId = (cell.id as any).description
 
     switch (df.type) {
@@ -188,7 +218,6 @@ export const convertToSExp = (df: DataFlow, network: Network): SExp => {
             return ['=', readableId, convertToSExp(df.child, network)]
         }
         case ('rule'): {
-            const repo = ensureGet(network.repositories, cell.repositoryId)
             switch (repo.content.type) {
                 case ('empty'): {
                     return ['=', readableId, '<Cannot Compute>']
@@ -217,8 +246,8 @@ export const convertToSExp = (df: DataFlow, network: Network): SExp => {
             return readableId
         }
         case ('inconsistent equal'): {
-            // TODO
-            throw new Error('assert false')
+            const children = df.children.map((child) => convertToSExp(child, network))
+            return ['inconsistent equal', readableId, children.toArray()]
         }
         case ('inconsistent rule'): {
             // TODO
