@@ -1,10 +1,16 @@
-import { Map } from 'immutable'
+import { List, Map } from 'immutable'
 
 import { constant, variable } from './cell'
 import { makeConstraint } from './constraint'
-import { collapseDataFlow, convertToSExp, DataFlow, makeDataFlow } from './data-flow'
+import {
+    AlgebraicDataFlow,
+    collapseDataFlow,
+    convertToAlgebraic,
+    DataFlow,
+    makeDataFlow,
+    useExternalCells,
+} from './data-flow'
 import { awaken, Network, setEqual } from './network'
-import { SExp } from './symbolic-expression'
 import { ensureGet } from './utils'
 
 export class PersistentNetwork {
@@ -91,19 +97,16 @@ export class PersistentNetwork {
             undefined
     }
 
-    why(cellId: symbol, keepCells?: symbol[]): DataFlow {
+    why(cellId: symbol, keepCells?: symbol[]): List<DataFlow> {
         const cell = ensureGet(this.network.cells, cellId)
-        const df = makeDataFlow(cell, this.network)
+        const dfs = makeDataFlow(cell, this.network)
 
-        return keepCells ?
-            collapseDataFlow(
-                df,
-                keepCells,
-            ) :
-            df
+        return dfs
+            .map((df) => keepCells ? collapseDataFlow(df, keepCells) : df)
+            .map((df) => useExternalCells(df, this.network))
     }
 
-    what(cellId: symbol, keepCells?: symbol[]): SExp {
-        return convertToSExp(this.why(cellId, keepCells), this.network)
+    what(cellId: symbol, keepCells?: symbol[]): AlgebraicDataFlow {
+        return convertToAlgebraic(this.why(cellId, keepCells), this.network)
     }
 }
