@@ -106,7 +106,8 @@ export class PersistentNetwork {
             .map((df) => useExternalCells(df, this.network))
     }
 
-    what(cellId: symbol, keepCells?: symbol[]): AlgebraicDataFlow {
-        return convertToAlgebraic(this.why(cellId, keepCells), this.network)
+    what(cellId: symbol, keepCells?: symbol[]): List<AlgebraicDataFlow> {
+        return this.why(cellId, keepCells)
+            .map((df) => convertToAlgebraic(df, this.network))
     }
 }

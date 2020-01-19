@@ -40,36 +40,37 @@ export const makeDataFlow = (cell: Cell, network: Network): List<DataFlow> => {
         })
         .toList()
 
-    const nonRuleDataFlow: DataFlow = (() => {
+    const nonRuleDataFlows: List<DataFlow> = (() => {
         switch (repo.content.type) {
             case ('empty'): {
-                return {
+                return List<DataFlow>([{
                     cellId: cell.id,
                     type: 'terminal' as 'terminal',
-                }
+                }])
             }
             case ('constant'): {
                 if (repo.content.supplier.cellId === cell.id) {
-                    return {
+                    return List<DataFlow>([{
                         cellId: cell.id,
                         type: 'terminal' as 'terminal',
-                    }
+                    }])
                 } else {
-                    return {
-                        cellId: cell.id,
-                        type: 'equal' as 'equal',
-                        child: makeDataFlow(
-                            ensureGet(network.cells, repo.content.supplier.cellId),
-                            network,
-                        ),
-                    }
+                    return makeDataFlow(
+                        ensureGet(network.cells, repo.content.supplier.cellId),
+                        network,
+                    ).map((df) => {
+                        return {
+                            cellId: cell.id,
+                            type: 'equal' as 'equal',
+                            child: df,
+                        }
+                    })
                 }
             }
             case ('inconsistency'): {
-                const children = repo.content.suppliers
+                const children: List<DataFlow> = repo.content.suppliers
                     .filter(({ supplier: { cellId: xCellId } }) => xCellId !== cell.id)
-                    .map(
-                        ({ data, supplier }) => {
+                    .flatMap(({ data, supplier }) => {
                             // In order to avoid the child dataflow from depending on
                             // the dataflow we are currently constructing, fake the
                             // repository being a constant
@@ -90,11 +91,11 @@ export const makeDataFlow = (cell: Cell, network: Network): List<DataFlow> => {
                                 })
                         })
 
-                return {
+                return List<DataFlow>([{
                     cellId: cell.id,
                     type: 'inconsistent equal' as 'inconsistent equal',
                     children,
-                }
+                }])
             }
             // case ('calculated'): {
             //     if (repo.content.supplier.cellId === cell.id) {
@@ -127,5 +128,5 @@ export const makeDataFlow = (cell: Cell, network: Network): List<DataFlow> => {
         }
     })()
 
-    return ruleDataFlows.push(nonRuleDataFlow)
+    return ruleDataFlows.concat(nonRuleDataFlows)
 }
