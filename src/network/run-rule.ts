@@ -1,9 +1,12 @@
-import { Map } from 'immutable'
+import { List, Map } from 'immutable'
 import { all, any } from 'ramda'
 
-import { Cell, Repository } from '../cell'
+import { Cell, Content, Repository } from '../cell'
 import { Constraint, Rule } from '../constraint'
 import { ensureGet } from '../utils'
+
+// TODO. Manually moving this functionality over to the DataFlow module. Can likely
+// remove these after that's done
 
 export const runRule = ({
     rule,
@@ -18,10 +21,39 @@ export const runRule = ({
     repositories: Map<symbol, Repository>,
     updatedCells: Map<symbol, Cell>,
 }): Map<symbol, Repository> => {
-    const contents = rule.input.map((cellId) => {
-        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
-        return ensureGet(repositories, cell.repositoryId).content
-    })
+    if (canRunRule({ rule, constraint, repositories, cells, updatedCells })) {
+        const contents = getContents({ rule, constraint, cells, repositories })
+
+        const args = contents.map((content) => {
+            if (content.type === 'constant') {
+                return (content as any).data
+            } else {
+                throw new Error('assert false')
+            }
+        })
+
+        const update = rule.update(...args)
+
+        return applyRuleUpdate({ update, cells, repositories, constraint })
+    } else {
+        return Map()
+    }
+}
+
+export const canRunRule = ({
+    rule,
+    constraint,
+    repositories,
+    cells,
+    updatedCells,
+}: {
+    rule: Rule,
+    constraint: Constraint,
+    repositories: Map<symbol, Repository>,
+    cells: Map<symbol, Cell>,
+    updatedCells: Map<symbol, Cell>,
+}): boolean => {
+    const contents = getContents({ rule, constraint, cells, repositories })
 
     const inputsAreUpdated = any((cellId) => {
         const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
@@ -30,27 +62,25 @@ export const runRule = ({
 
     const allContentsBound = all(({ type }) => type === 'constant', contents.toArray())
 
-    const theUpdate = (() => {
-        if (inputsAreUpdated && allContentsBound) {
-            const args = contents.map((content) => {
-                if (content.type === 'constant') {
-                    return (content as any).data
-                } else {
-                    throw new Error('assert false')
-                }
-            })
+    return inputsAreUpdated && allContentsBound
+}
 
-            return rule.update(...args)
-        } else {
-            return {}
-        }
-    })()
-
-    return Object.getOwnPropertySymbols(theUpdate).reduce((acc, cellId) => {
+export const applyRuleUpdate = ({
+    update,
+    cells,
+    repositories,
+    constraint,
+}: {
+    update: Record<symbol, number>,
+    constraint: Constraint,
+    cells: Map<symbol, Cell>,
+    repositories: Map<symbol, Repository>,
+}): Map<symbol, Repository> => {
+    return Object.getOwnPropertySymbols(update).reduce((acc, cellId) => {
         const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
         const repo = ensureGet(repositories, cell.repositoryId)
 
-        const theUpdateData = (theUpdate as any)[cellId]
+        const theUpdateData = (update as any)[cellId]
 
         if (repo.content.type === 'constant' && repo.content.data === theUpdateData) {
             // Do nothing. Adds no information
@@ -77,4 +107,21 @@ export const runRule = ({
             })
         }
     }, Map<symbol, Repository>())
+}
+
+const getContents = ({
+    rule,
+    constraint,
+    cells,
+    repositories,
+}: {
+    rule: Rule,
+    constraint: Constraint,
+    cells: Map<symbol, Cell>,
+    repositories: Map<symbol, Repository>,
+}): List<Content> => {
+    return rule.input.map((cellId) => {
+        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
+        return ensureGet(repositories, cell.repositoryId).content
+    })
 }

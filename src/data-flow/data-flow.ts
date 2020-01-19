@@ -3,6 +3,7 @@ import { List } from 'immutable'
 import { Cell } from '../cell'
 import { Network } from '../network/network'
 import { ensureGet } from '../utils'
+import { canRunRule, ruleToDataFlow } from './rule-handling'
 
 export type DataFlow = Readonly<{
     cellId: symbol,
@@ -35,9 +36,13 @@ export const makeDataFlow = (cell: Cell, network: Network): List<DataFlow> => {
     const ruleDataFlows: List<DataFlow> = network.constraints
         .filter((constraint) => constraint.cellMapping.find((id) => id === cell.id))
         .map((constraint) => {
-            // TODO
-            throw new Error('assert false')
+            const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
+
+            return constraintType.rules
+                .filter((rule) => canRunRule({ rule, constraint, network }))
+                .map((rule) => ruleToDataFlow({ cell, rule, constraint, network }))
         })
+        .flatten()
         .toList()
 
     const nonRuleDataFlows: List<DataFlow> = (() => {
