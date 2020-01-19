@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import { List } from 'immutable'
 
 export type Repository = Readonly<{
     id: symbol,
@@ -14,18 +14,14 @@ export type Content = Readonly<{
         cellId: symbol,
     },
 } | {
-    type: 'calculated',
-    data: number,
-    supplier: {
-        cellId: symbol,
-        constraintId: symbol,
-        ruleId: symbol,
-    },
+    type: 'inconsistency',
+    data: List<{
+        data: number,
+        supplier: {
+            cellId: symbol,
+        },
+    }>,
 }>
-
-export const hasValue = ({ type }: Content): boolean => {
-    return type === 'constant' || type === 'calculated'
-}
 
 export type Cell = Readonly<{
     id: symbol,
@@ -74,13 +70,27 @@ export const variable = (name?: string): [Cell, Repository] => {
 
 export const mergeRepositories = (aRepo: Repository, bRepo: Repository, ancestorRepo?: Repository): Repository => {
     const content: Content = (() => {
-        if (hasValue(aRepo.content) && hasValue(bRepo.content)) {
-            assert((aRepo.content as any).data === (bRepo.content as any).data)
-
-            return ancestorRepo?.content || aRepo.content
-        } else if (hasValue(aRepo.content)) {
+        if (aRepo.content.type === 'constant' && bRepo.content.type === 'constant') {
+            if (aRepo.content.data === bRepo.content.data) {
+                return ancestorRepo?.content || aRepo.content
+            } else {
+                return {
+                    type: 'inconsistency' as 'inconsistency',
+                    data: List([
+                        {
+                            data: aRepo.content.data,
+                            supplier: aRepo.content.supplier,
+                        },
+                        {
+                            data: bRepo.content.data,
+                            supplier: bRepo.content.supplier,
+                        },
+                    ]),
+                }
+            }
+        } else if (aRepo.content.type === 'constant') {
             return aRepo.content
-        } else if (hasValue(bRepo.content)) {
+        } else if (bRepo.content.type === 'constant') {
             return bRepo.content
         } else {
             // Could return either

@@ -1,6 +1,6 @@
 import { Map } from 'immutable'
 
-import { constant, hasValue, variable } from './cell'
+import { constant, variable } from './cell'
 import { makeConstraint } from './constraint'
 import { collapseDataFlow, convertToSExp, DataFlow, makeDataFlow } from './data-flow'
 import { awaken, Network, setEqual } from './network'
@@ -85,8 +85,9 @@ export class PersistentNetwork {
         const cell = ensureGet(this.network.cells, cellId)
         const repo = ensureGet(this.network.repositories, cell.repositoryId)
 
-        return hasValue(repo.content) ?
-            (repo.content as any).data :
+        // TODO need to derive this from the DataFlow
+        return repo.content.type === 'constant' ?
+            repo.content.data :
             undefined
     }
 

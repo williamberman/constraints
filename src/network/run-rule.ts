@@ -1,7 +1,7 @@
 import { Map } from 'immutable'
 import { all, any } from 'ramda'
 
-import { Cell, hasValue, Repository } from '../cell'
+import { Cell, Repository } from '../cell'
 import { Constraint, Rule } from '../constraint'
 import { ensureGet } from '../utils'
 
@@ -28,12 +28,12 @@ export const runRule = ({
         return updatedCells.has(cell.id)
     }, rule.input.toArray())
 
-    const allContentsBound = all(hasValue, contents.toArray())
+    const allContentsBound = all(({ type }) => type === 'constant', contents.toArray())
 
     const theUpdate = (() => {
         if (inputsAreUpdated && allContentsBound) {
             const args = contents.map((content) => {
-                if (hasValue(content)) {
+                if (content.type === 'constant') {
                     return (content as any).data
                 } else {
                     throw new Error('assert false')
@@ -52,23 +52,27 @@ export const runRule = ({
 
         const theUpdateData = (theUpdate as any)[cellId]
 
-        if (hasValue(repo.content) && (repo.content as any).data === theUpdateData) {
+        if (repo.content.type === 'constant' && repo.content.data === theUpdateData) {
             // Do nothing. Adds no information
             return acc
-        } else if (hasValue(repo.content) && (repo.content as any).data !== theUpdateData) {
+        } else if (repo.content.type === 'constant' && repo.content.data !== theUpdateData) {
             throw new Error('Illegal update to repo: TODO better error message')
         } else {
             return acc.set(repo.id, {
                 ...repo,
                 content: {
-                    type: 'calculated',
-                    data: theUpdateData,
-                    supplier: {
-                        cellId: cell.id,
-                        constraintId: constraint.id,
-                        ruleId: rule.id,
-                    },
+                    type: 'empty',
                 },
+                // TODO we no longr store calculated value in the repo
+                // content: {
+                //     type: 'calculated',
+                //     data: theUpdateData,
+                //     supplier: {
+                //         cellId: cell.id,
+                //         constraintId: constraint.id,
+                //         ruleId: rule.id,
+                //     },
+                // },
             })
         }
     }, Map<symbol, Repository>())
