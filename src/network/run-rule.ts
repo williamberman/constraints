@@ -56,6 +56,7 @@ export const runRule = ({
             // Do nothing. Adds no information
             return acc
         } else if (repo.content.type === 'constant' && repo.content.data !== theUpdateData) {
+            // TODO this is no longer illegal. Handle this gracefully
             throw new Error('Illegal update to repo: TODO better error message')
         } else {
             return acc.set(repo.id, {

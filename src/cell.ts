@@ -15,7 +15,7 @@ export type Content = Readonly<{
     },
 } | {
     type: 'inconsistency',
-    data: List<{
+    suppliers: List<{
         data: number,
         supplier: {
             cellId: symbol,
@@ -76,7 +76,7 @@ export const mergeRepositories = (aRepo: Repository, bRepo: Repository, ancestor
             } else {
                 return {
                     type: 'inconsistency' as 'inconsistency',
-                    data: List([
+                    suppliers: List([
                         {
                             data: aRepo.content.data,
                             supplier: aRepo.content.supplier,

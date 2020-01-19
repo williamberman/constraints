@@ -18,6 +18,16 @@ export type DataFlow = Readonly<{
 } | {
     cellId: symbol,
     type: 'terminal',
+} | {
+    cellId: symbol,
+    type: 'inconsistent equal',
+    children: List<DataFlow>,
+} | {
+    cellId: symbol,
+    type: 'inconsistent rule',
+    ruleId: symbol,
+    constraintId: symbol,
+    children: List<DataFlow>,
 }>
 
 export const makeDataFlow = (cell: Cell, network: Network): DataFlow => {
@@ -49,8 +59,35 @@ export const makeDataFlow = (cell: Cell, network: Network): DataFlow => {
                 }
             }
             case ('inconsistency'): {
-                // TODO
-                throw new Error('assert false')
+                const children = repo.content.suppliers
+                    .filter(({ supplier: { cellId: xCellId } }) => xCellId !== cell.id)
+                    .map(
+                        ({ data, supplier }) => {
+                            // In order to avoid the child dataflow from depending on
+                            // the dataflow we are currently constructing, fake the
+                            // repository being a constant
+                            const repositories = network.repositories.set(repo.id, {
+                                id: repo.id,
+                                content: {
+                                    type: 'constant',
+                                    data,
+                                    supplier,
+                                },
+                            })
+
+                            return makeDataFlow(
+                                ensureGet(network.cells, supplier.cellId),
+                                {
+                                    ...network,
+                                    repositories,
+                                })
+                        })
+
+                return {
+                    cellId: cell.id,
+                    type: 'inconsistent equal' as 'inconsistent equal',
+                    children,
+                }
             }
             // case ('calculated'): {
             //     if (repo.content.supplier.cellId === cell.id) {
@@ -131,6 +168,14 @@ export const collapseDataFlow = (df: DataFlow, keepCells: symbol[]): DataFlow =>
                 }
             }
         }
+        case ('inconsistent equal'): {
+            // TODO
+            throw new Error('assert false')
+        }
+        case ('inconsistent rule'): {
+            // TODO
+            throw new Error('assert false')
+        }
     }
 }
 
@@ -170,6 +215,14 @@ export const convertToSExp = (df: DataFlow, network: Network): SExp => {
         }
         case ('terminal'): {
             return readableId
+        }
+        case ('inconsistent equal'): {
+            // TODO
+            throw new Error('assert false')
+        }
+        case ('inconsistent rule'): {
+            // TODO
+            throw new Error('assert false')
         }
     }
 }
