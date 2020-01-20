@@ -19,6 +19,7 @@ export type Rule = Readonly<{
     id: symbol,
     // update and toSExp should have the same arity as input's length
     input: List<symbol>,
+    output: symbol,
     update: (...args: number[]) => Record<symbol, number>,
     toSExp: (...args: SExp[]) => SExp,
 }>

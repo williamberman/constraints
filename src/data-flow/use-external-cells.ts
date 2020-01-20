@@ -19,7 +19,6 @@ export const useExternalCells = (df: DataFlow, network: Network): DataFlow => {
 
     switch (df.type) {
         case ('terminal'): {
-
             const externalCell = network.cells.find(
                 ({ repositoryId, external }) => repositoryId === repo.id && external)
 
@@ -33,7 +32,10 @@ export const useExternalCells = (df: DataFlow, network: Network): DataFlow => {
             }
         }
         case ('equal'): {
-            return useExternalCells(df.child, network)
+            return {
+                ...df,
+                child: useExternalCells(df.child, network),
+            }
         }
         case ('rule'): {
             return recur(df.children)

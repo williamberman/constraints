@@ -1,9 +1,10 @@
 import { List } from 'immutable'
 
 import { Cell, Repository } from '../cell'
+import { Constraint, Rule } from '../constraint'
 import { Network } from '../network/network'
 import { ensureGet } from '../utils'
-import { canRunRule, ruleToDataFlow } from './rule-handling'
+import { ruleToDataFlow } from './rule-handling'
 
 export type DataFlow = Readonly<{
     cellId: symbol,
@@ -47,16 +48,29 @@ const makeRuleDataFlows = (cell: Cell, network: Network): List<DataFlow> => {
                     const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
 
                     return constraintType.rules
-                        .filter((rule) => canRunRule({ rule, constraint, network }))
+                        .filter((rule) => ruleOutputsTo({ rule, constraint, cell: repoCell }))
                         .map((rule) => ruleToDataFlow({ cell: repoCell, rule, constraint, network }))
+                        .flatten()
                         .map((df) => repoCell.id === cell.id ?
-                            { cellId: cell.id, type: 'equal', child: df } :
-                            df)
+                            df :
+                            { cellId: cell.id, type: 'equal', child: df })
                 })
                 .toList()
         })
         .flatten()
         .toList()
+}
+
+const ruleOutputsTo = ({
+    cell,
+    rule,
+    constraint,
+}: {
+    cell: Cell,
+    rule: Rule,
+    constraint: Constraint
+}): boolean => {
+    return rule.output === ensureGet(constraint.cellMapping.flip(), cell.id)
 }
 
 const makeNonRuleDataFlows = ({
@@ -113,6 +127,7 @@ const makeNonRuleDataFlows = ({
                 children,
             }])
         }
+        // TODO remove
         // case ('calculated'): {
         //     if (repo.content.supplier.cellId === cell.id) {
         //         const constraint = ensureGet(network.constraints, repo.content.supplier.constraintId)

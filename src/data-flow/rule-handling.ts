@@ -1,30 +1,10 @@
-import { List, Map } from 'immutable'
-import { all } from 'ramda'
+import { List } from 'immutable'
 
-import { Cell, Content, Repository } from '../cell'
+import { Cell } from '../cell'
 import { Constraint, Rule } from '../constraint'
 import { Network } from '../network/network'
 import { ensureGet } from '../utils'
 import { DataFlow, makeDataFlow } from './data-flow'
-
-export const canRunRule = ({
-    rule,
-    constraint,
-    network,
-}: {
-    rule: Rule,
-    constraint: Constraint,
-    network: Network,
-}): boolean => {
-    const { cells, repositories } = network
-    const contents = getContents({ rule, constraint, cells, repositories })
-
-    const allContentsBound = all(
-        ({ type }) => type === 'constant' || type === 'inconsistency',
-        contents.toArray())
-
-    return allContentsBound
-}
 
 export const ruleToDataFlow = ({
     cell,
@@ -37,79 +17,43 @@ export const ruleToDataFlow = ({
     constraint: Constraint,
     network: Network,
 }): List<DataFlow> => {
-    const { cells, repositories } = network
-    const contents = getContents({ rule, constraint, cells, repositories })
+    // Once a rule is being converted to a DataFlow, it's Constraint must be
+    // removed from the network while converting children to DataFlows to avoid
+    // circular conversion dependencies
+    const networkWithoutConstraint = removeConstraint({ constraint, network })
 
-    return contents
-        .reduce((acc, content) => {
-            if (content.type === 'constant') {
-                return acc.map((args) => args.push(content.supplier.cellId))
-            } else if (content.type === 'inconsistency') {
-                // TODO ensure that flatten here works as expected
-                return content.suppliers
-                    .map(({ supplier }) => acc.map((args) => args.push(supplier.cellId)))
-                    .flatten(1)
-                    .toList()
-            } else {
-                throw new Error('assert false')
-            }
-        }, List<List<symbol>>([List()])) // Need to start with one empty list at a minimum
-        .map((childrenIds) => {
-            // Once a rule is being converted to a DataFlow, it must be removed from
-            // the network while converting children to DataFlows to avoid circular
-            // conversion dependencies
-            const xNetwork = removeRule({ rule, constraint, network })
+    const dataFlows: List<DataFlow> = rule.input
+        .map((idInConstraintType) => ensureGet(constraint.cellMapping, idInConstraintType))
+        .map((generalId) => ensureGet(network.cells, generalId))
+        .map((inputCell) => makeDataFlow(inputCell, networkWithoutConstraint))
+        .reduce((acc, dfs: List<DataFlow>) => {
+            return dfs
+                .map((df) => acc.map((args) => args.push(df)))
+                .flatten(1)
+                .toList()
+        }, List<List<DataFlow>>([List()])) // Need to start with one empty list at a minimum
+        .map((children) => ({
+            cellId: cell.id,
+            type: 'rule',
+            ruleId: rule.id,
+            constraintId: constraint.id,
+            children,
+        }))
 
-            const children: List<DataFlow> = childrenIds.flatMap(
-                (childId) => makeDataFlow(ensureGet(cells, childId), xNetwork))
-
-            return {
-                cellId: cell.id,
-                type: 'rule',
-                ruleId: rule.id,
-                constraintId: constraint.id,
-                children,
-            }
-        })
+    return dataFlows
 }
 
-const getContents = ({
-    rule,
-    constraint,
-    cells,
-    repositories,
-}: {
-    rule: Rule,
-    constraint: Constraint,
-    cells: Map<symbol, Cell>,
-    repositories: Map<symbol, Repository>,
-}): List<Content> => {
-    return rule.input.map((cellId) => {
-        const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
-        return ensureGet(repositories, cell.repositoryId).content
-    })
-}
-
-const removeRule = ({
-    rule,
-    constraint,
+const removeConstraint = ({
     network,
+    constraint
 }: {
-    rule: Rule,
-    constraint: Constraint,
     network: Network,
+    constraint: Constraint
 }): Network => {
-    const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
-    const rules = constraintType.rules.remove(rule.id)
-    const constraintTypes = network.constraintTypes.set(constraintType.id, {
-        ...constraintType,
-        rules,
-    })
+    const constraints = network.constraints.remove(constraint.id)
 
-    const xNetwork = {
+    return {
         ...network,
-        constraintTypes,
+        constraints,
     }
-
-    return xNetwork
 }

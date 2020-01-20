@@ -23,18 +23,21 @@ export const adder: ConstraintType = (() => {
             [id1, {
                 id: id1,
                 input: List([a, b]),
+                output: c,
                 update: (xa: number, xb: number) => ({ [c]: xa + xb }),
                 toSExp: (xa: SExp, xb: SExp) => ['+', xa, xb],
             }],
             [id2, {
                 id: id2,
                 input: List([a, c]),
+                output: b,
                 update: (xa: number, xc: number) => ({ [b]: xc - xa }),
                 toSExp: (xa: SExp, xc: SExp) => ['-', xc, xa],
             }],
             [id3, {
                 id: id3,
                 input: List([c, b]),
+                output: a,
                 update: (xc: number, xb: number) => ({ [a]: xc - xb }),
                 toSExp: (xc: SExp, xb: SExp) => ['-', xc, xb],
             }],
@@ -61,24 +64,28 @@ export const multiplier: ConstraintType = (() => {
             [id1, {
                 id: id1,
                 input: List([a]),
+                output: c,
                 update: (xa: number) => xa === 0 ? { [c]: 0 } : {},
                 toSExp: (xa: SExp) => ['*', xa, '_'],
             }],
             [id2, {
                 id: id2,
                 input: List([b]),
+                output: c,
                 update: (xb: number) => xb === 0 ? { [c]: 0 } : {},
                 toSExp: (xb: SExp) => ['*', '_', xb],
             }],
             [id3, {
                 id: id3,
                 input: List([a, b]),
+                output: c,
                 update: (xa: number, xb: number) => ({ [c]: xa * xb }),
                 toSExp: (xa: SExp, xb: SExp) => ['*', xa, xb],
             }],
             [id4, {
                 id: id4,
                 input: List([a, c]),
+                output: b,
                 update: (xa: number, xc: number) =>
                     (xa !== 0 && xc % xa === 0) ?
                         { [b]: xc / xa } :
@@ -88,6 +95,7 @@ export const multiplier: ConstraintType = (() => {
             [id5, {
                 id: id5,
                 input: List([b, c]),
+                output: a,
                 update: (xb: number, xc: number) =>
                     (xb !== 0 && xc % xb === 0) ?
                         { [a]: xc / xb } :

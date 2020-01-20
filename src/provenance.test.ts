@@ -70,7 +70,7 @@ describe('Provenance', () => {
                 },
             }
 
-            expect(actual).toEqual(expected)
+            expect(actual).toEqual(List([expected]))
         })
 
         test('Short Form', () => {
@@ -96,7 +96,7 @@ describe('Provenance', () => {
                 ]),
             }
 
-            expect(actual).toEqual(expected)
+            expect(actual).toEqual(List([expected]))
         })
 
         describe('Symbolic Form', () => {
