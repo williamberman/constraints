@@ -1,6 +1,6 @@
 import { List, Map } from 'immutable'
 
-import { Cell, Repository, variable } from './cell'
+import { Cell, makeVariableCell, Repository } from './cell'
 import { SExp } from './symbolic-expression'
 
 export type ConstraintType = Readonly<{
@@ -31,8 +31,9 @@ export const makeConstraint = (
     let cells = Map<symbol, Cell>()
     let repos = Map<symbol, Repository>()
 
-    Object.values(ct.cells).map((cellId) => {
-        const [cell, repo] = variable()
+    Object.keys(ct.cells).map((cellName) => {
+        const cellId = ct.cells[cellName]
+        const [cell, repo] = makeVariableCell(cellName)
         cells = cells.set(cell.id, cell)
         repos = repos.set(repo.id, repo)
 

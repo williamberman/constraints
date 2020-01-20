@@ -14,9 +14,9 @@ describe('Addition', () => {
             constraintTypes: stdLib,
         }))
 
-        foo = net.variable()
-        bar = net.variable()
-        baz = net.variable()
+        foo = net.variable('foo')
+        bar = net.variable('bar')
+        baz = net.variable('baz')
 
         const add = net.create(adder.id)
 

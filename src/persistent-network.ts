@@ -1,6 +1,6 @@
 import { List, Map } from 'immutable'
 
-import { constant, variable } from './cell'
+import { makeConstantCell, makeVariableCell } from './cell'
 import { makeConstraint } from './constraint'
 import {
     AlgebraicDataFlow,
@@ -20,7 +20,7 @@ export class PersistentNetwork {
     }
 
     constant(n: number, name?: string): symbol {
-        const [cell, repo] = constant(n, name)
+        const [cell, repo] = makeConstantCell(n, name || n.toString())
 
         this.network = {
             ...this.network,
@@ -31,8 +31,8 @@ export class PersistentNetwork {
         return cell.id
     }
 
-    variable(name?: string): symbol {
-        const [cell, repo] = variable(name)
+    variable(name: string): symbol {
+        const [cell, repo] = makeVariableCell(name)
 
         const xCell = {
             ...cell,

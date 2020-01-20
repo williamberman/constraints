@@ -16,6 +16,6 @@ describe('Cells', () => {
     })
 
     test('variable', () => {
-        expect(net.valueOf(net.variable())).toEqual(undefined)
+        expect(net.valueOf(net.variable('any name'))).toEqual(undefined)
     })
 })

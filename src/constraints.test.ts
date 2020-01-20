@@ -12,7 +12,7 @@ describe('Constraints', () => {
 
     test('equals', () => {
         const foo = net.constant(1)
-        const bar = net.variable()
+        const bar = net.variable('bar')
 
         expect(net.valueOf(foo)).toEqual(1)
         expect(net.valueOf(bar)).toEqual(undefined)
@@ -25,8 +25,8 @@ describe('Constraints', () => {
 
     test('equals propagates to multiple', () => {
         const foo = net.constant(1)
-        const bar = net.variable()
-        const baz = net.variable()
+        const bar = net.variable('bar')
+        const baz = net.variable('baz')
 
         net.setEqual(bar, baz)
 

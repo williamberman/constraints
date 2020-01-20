@@ -6,8 +6,8 @@ export const makeTemperatureNetwork = (net: PersistentNetwork) => {
     const mult = net.create(multiplier.id)
     const othermult = net.create(multiplier.id)
 
-    const farenheit = net.variable()
-    const centigrade = net.variable()
+    const farenheit = net.variable('farenheit')
+    const centigrade = net.variable('centigrade')
 
     net.setEqual(farenheit, net.the(adder.cells.c, add))
     net.setEqual(net.constant(32), net.the(adder.cells.b, add))

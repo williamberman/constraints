@@ -29,7 +29,7 @@ export type Cell = Readonly<{
     external: boolean,
 }>
 
-const makeCell = (name?: string): [Cell, Repository] => {
+const makeCell = (name: string): [Cell, Repository] => {
     const repositoryId = Symbol()
 
     return [
@@ -46,7 +46,7 @@ const makeCell = (name?: string): [Cell, Repository] => {
     ]
 }
 
-export const constant = (n: number, name?: string): [Cell, Repository] => {
+export const makeConstantCell = (n: number, name: string): [Cell, Repository] => {
     const [cell, repo] = makeCell(name)
 
     return [
@@ -64,7 +64,7 @@ export const constant = (n: number, name?: string): [Cell, Repository] => {
     ]
 }
 
-export const variable = (name?: string): [Cell, Repository] => {
+export const makeVariableCell = (name: string): [Cell, Repository] => {
     return makeCell(name)
 }
 
