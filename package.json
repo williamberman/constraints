@@ -8,7 +8,10 @@
     "prebuild": "npm run-script lint",
     "build": "tsc",
     "test": "jest",
-    "test-debug": "node inspect ./node_modules/.bin/jest --runInBand"
+    "test-debug": "node inspect ./node_modules/.bin/jest --runInBand",
+    "prestart": "npm run-script build",
+    "start": "npm run-script repl",
+    "repl": "node -i -e \"$(< repl.js)\""
   },
   "author": "",
   "license": "ISC",
