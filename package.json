@@ -4,10 +4,10 @@
   "description": "A small constraint based programming system embedded in JavaScript modeled off of https://dspace.mit.edu/handle/1721.1/6933",
   "main": "index.js",
   "scripts": {
-    "lint": "tslint -c tslint.json -p tsconfig.json --fix",
+    "lint": "npx tslint -c tslint.json -p tsconfig.json --fix",
     "prebuild": "npm run-script lint",
-    "build": "tsc",
-    "test": "jest",
+    "build": "npx tsc",
+    "test": "npx jest",
     "test-debug": "node inspect ./node_modules/.bin/jest --runInBand",
     "prestart": "npm run-script build",
     "start": "npm run-script repl",
