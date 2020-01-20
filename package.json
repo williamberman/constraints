@@ -1,7 +1,7 @@
 {
   "name": "constraints",
   "version": "1.0.0",
-  "description": "",
+  "description": "A small constraint based programming system embedded in JavaScript modeled off of https://dspace.mit.edu/handle/1721.1/6933",
   "main": "index.js",
   "scripts": {
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
@@ -13,8 +13,8 @@
     "start": "npm run-script repl",
     "repl": "node -i -e \"$(< repl.js)\""
   },
-  "author": "",
-  "license": "ISC",
+  "author": "William Berman",
+  "license": "AGPLv3",
   "devDependencies": {
     "@types/jest": "^24.9.0",
     "@types/node": "^13.1.7",
