@@ -1,3 +1,4 @@
+export { NetworkValue, toNetworkValue } from './value'
 export { useExternalCells } from './use-external-cells'
 export { collapseDataFlow } from './collapse'
 export { AlgebraicDataFlow, convertToAlgebraic } from './algebraic'

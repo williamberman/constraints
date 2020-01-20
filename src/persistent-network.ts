@@ -8,6 +8,8 @@ import {
     convertToAlgebraic,
     DataFlow,
     makeDataFlow,
+    NetworkValue,
+    toNetworkValue,
     useExternalCells,
 } from './data-flow'
 import { awaken, Network, setEqual } from './network'
@@ -86,15 +88,11 @@ export class PersistentNetwork {
         }
     }
 
-    // undefined indicates not bound
-    valueOf(cellId: symbol): number | undefined {
+    valueOf(cellId: symbol): List<NetworkValue> {
         const cell = ensureGet(this.network.cells, cellId)
-        const repo = ensureGet(this.network.repositories, cell.repositoryId)
 
-        // TODO need to derive this from the DataFlow
-        return repo.content.type === 'constant' ?
-            repo.content.data :
-            undefined
+        return makeDataFlow(cell, this.network)
+            .map((df) => toNetworkValue(df, this.network))
     }
 
     why(cellId: symbol, keepCells?: symbol[]): List<DataFlow> {
