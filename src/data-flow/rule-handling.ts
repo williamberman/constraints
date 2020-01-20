@@ -55,8 +55,13 @@ export const ruleToDataFlow = ({
             }
         }, List<List<symbol>>([List()])) // Need to start with one empty list at a minimum
         .map((childrenIds) => {
+            // Once a rule is being converted to a DataFlow, it must be removed from
+            // the network while converting children to DataFlows to avoid circular
+            // conversion dependencies
+            const xNetwork = removeRule({ rule, constraint, network })
+
             const children: List<DataFlow> = childrenIds.flatMap(
-                (childId) => makeDataFlow(ensureGet(cells, childId), network))
+                (childId) => makeDataFlow(ensureGet(cells, childId), xNetwork))
 
             return {
                 cellId: cell.id,
@@ -83,4 +88,28 @@ const getContents = ({
         const cell = ensureGet(cells, ensureGet(constraint.cellMapping, cellId))
         return ensureGet(repositories, cell.repositoryId).content
     })
+}
+
+const removeRule = ({
+    rule,
+    constraint,
+    network,
+}: {
+    rule: Rule,
+    constraint: Constraint,
+    network: Network,
+}): Network => {
+    const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
+    const rules = constraintType.rules.remove(rule.id)
+    const constraintTypes = network.constraintTypes.set(constraintType.id, {
+        ...constraintType,
+        rules,
+    })
+
+    const xNetwork = {
+        ...network,
+        constraintTypes,
+    }
+
+    return xNetwork
 }

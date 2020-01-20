@@ -1,3 +1,5 @@
+import { List } from 'immutable'
+
 import { fromPartial } from './network'
 import { PersistentNetwork } from './persistent-network'
 import { adder, stdLib } from './std-lib'
@@ -29,13 +31,13 @@ describe('Addition', () => {
         net.setEqual(foo, net.constant(1))
         net.setEqual(bar, net.constant(2))
 
-        expect(net.valueOf(baz)).toEqual(3)
+        expect(net.valueOf(baz)).toEqual(List([{ data: 3, type: 'bound' }]))
     })
 
     test('backwards', () => {
         net.setEqual(bar, net.constant(2))
         net.setEqual(baz, net.constant(3))
 
-        expect(net.valueOf(foo)).toEqual(1)
+        expect(net.valueOf(foo)).toEqual(List([{ data: 1, type: 'bound' }]))
     })
 })
