@@ -60,10 +60,36 @@ const reverseAdderExample = () => {
     what(bar, [foo, bar, baz])
 }
 
+const inconsistentAdderExample = () => {
+    reset()
+
+    let foo = variable('foo')
+    let bar = variable('bar')
+    let baz = variable('baz')
+
+    let add = create(adder.id)
+
+    setEqual(the(adder.cells.a, add), foo)
+    setEqual(the(adder.cells.b, add), bar)
+    setEqual(the(adder.cells.c, add), baz)
+
+    valueOf(baz)
+
+    // Both inconsistent values can coexist in network
+    setEqual(foo, constant(1))
+    setEqual(foo, constant(2))
+    setEqual(bar, constant(2))
+
+    valueOf(baz)
+
+    // TODO need to handle side cases for value conversion
+    // what(baz, [foo, bar, baz])
+}
+
 const centigradeToFarenheitExample = () => {
     reset()
 
-    const { centigrade, farenheit } = makeTemperatureNetwork()
+    let { centigrade, farenheit } = makeTemperatureNetwork()
 
     setEqual(centigrade, constant(-40))
 
@@ -75,7 +101,7 @@ const centigradeToFarenheitExample = () => {
 const farenheitToCentigradeExample = () => {
     reset()
 
-    const { centigrade, farenheit } = makeTemperatureNetwork()
+    let { centigrade, farenheit } = makeTemperatureNetwork()
 
     setEqual(farenheit, constant(50))
 

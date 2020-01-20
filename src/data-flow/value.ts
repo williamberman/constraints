@@ -14,7 +14,13 @@ export type NetworkValue = Readonly<{
     data: number,
 } | {
     type: 'inconsistency',
-    // TODO what to put here?
+    values: List<InconsistentValue>,
+}>
+
+type InconsistentValue = Readonly<{
+    data: number,
+    cell: string,
+    supplier: string,
 }>
 
 export const toNetworkValue = (df: DataFlow, network: Network): NetworkValue => {
@@ -47,15 +53,28 @@ export const toNetworkValue = (df: DataFlow, network: Network): NetworkValue => 
                     return { type: 'bound', data: repo.content.data }
                 }
                 case ('inconsistency'): {
-                    return { type: 'inconsistency' }
+                    return { type: 'inconsistency', values: List() }
                 }
             }
         }
         case ('inconsistent equal'): {
-            return { type: 'inconsistency' }
+            const values: List<InconsistentValue> = (() => {
+                if (repo.content.type === 'inconsistency') {
+                    return repo.content.suppliers.map(({ data, supplier }) => {
+                        return ({
+                            data,
+                            cell: (cell.id as any).description,
+                            supplier: (supplier.cellId as any).description,
+                        })
+                    })
+                } else {
+                    return List<InconsistentValue>()
+                }
+            })()
+            return { type: 'inconsistency', values }
         }
         case ('inconsistent rule'): {
-            return { type: 'inconsistency' }
+            return { type: 'inconsistency', values: List() }
         }
     }
 }

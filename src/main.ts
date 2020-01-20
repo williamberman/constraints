@@ -59,7 +59,11 @@ export const valueOf = (cellId: symbol) => {
                 break
             }
             case 'inconsistency': {
-                console.log(`${readableId} is bound to multiple inconsistent values`)
+                console.log(`${readableId} is dependent on multiple inconsistent values`)
+                nval.values.forEach(({ data, cell, supplier }, iValIdx) => {
+                    console.log(`${readableId} inconsistent dependency #${iValIdx + 1}`)
+                    console.log(`${cell} is assigned ${data} from ${supplier}`)
+                })
                 break
             }
         }
