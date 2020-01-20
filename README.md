@@ -1,3 +1,5 @@
+A small constraint based programming system embedded in JavaScript modeled off of https://dspace.mit.edu/handle/1721.1/6933
+
 ## Installation
 After cloning, install dependencies with `npm install`.
 
