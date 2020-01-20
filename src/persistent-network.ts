@@ -1,4 +1,4 @@
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 
 import { makeConstantCell, makeVariableCell } from './cell'
 import { makeConstraint } from './constraint'
@@ -12,7 +12,7 @@ import {
     toNetworkValue,
     useExternalCells,
 } from './data-flow'
-import { awaken, Network, setEqual } from './network'
+import { Network, setEqual } from './network'
 import { ensureGet } from './utils'
 
 export class PersistentNetwork {
@@ -73,18 +73,11 @@ export class PersistentNetwork {
 
     setEqual(aCellId: symbol, bCellId: symbol) {
         const { cells, repositories } = setEqual(aCellId, bCellId, this.network)
-        const newCells = this.network.cells.merge(cells)
-
-        const updatedRepositories = awaken(cells, Map(), {
-            ...this.network,
-            repositories,
-            cells: newCells,
-        })
 
         this.network = {
             ...this.network,
-            cells: newCells,
-            repositories: repositories.merge(updatedRepositories),
+            cells: this.network.cells.merge(cells),
+            repositories,
         }
     }
 
