@@ -34,7 +34,8 @@ export const makeConstraint = (
 
     Object.keys(ct.cells).map((cellName) => {
         const cellId = ct.cells[cellName]
-        const [cell, repo] = makeVariableCell(cellName)
+        const readableName = name ? `${name}-${cellName}` : cellName
+        const [cell, repo] = makeVariableCell(readableName)
         cells = cells.set(cell.id, cell)
         repos = repos.set(repo.id, repo)
 

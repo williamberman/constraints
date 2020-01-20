@@ -10,7 +10,8 @@ const {
     whyUltimately,
     what,
     adder,
-    multiplier
+    multiplier,
+    makeTemperatureNetwork
 } = require('./dist/main.js')
 
 const adderExample = () => {
@@ -57,4 +58,28 @@ const reverseAdderExample = () => {
     valueOf(bar)
 
     what(bar, [foo, bar, baz])
+}
+
+const centigradeToFarenheitExample = () => {
+    reset()
+
+    const { centigrade, farenheit } = makeTemperatureNetwork()
+
+    setEqual(centigrade, constant(-40))
+
+    valueOf(farenheit)
+
+    what(farenheit, [farenheit, centigrade])
+}
+
+const farenheitToCentigradeExample = () => {
+    reset()
+
+    const { centigrade, farenheit } = makeTemperatureNetwork()
+
+    setEqual(farenheit, constant(50))
+
+    valueOf(centigrade)
+
+    what(centigrade, [farenheit, centigrade])
 }

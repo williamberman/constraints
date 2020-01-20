@@ -2,9 +2,9 @@ import { PersistentNetwork } from './persistent-network'
 import { adder, multiplier } from './std-lib'
 
 export const makeTemperatureNetwork = (net: PersistentNetwork) => {
-    const add = net.create(adder.id)
-    const mult = net.create(multiplier.id)
-    const othermult = net.create(multiplier.id)
+    const add = net.create(adder.id, 'add')
+    const mult = net.create(multiplier.id, 'mult')
+    const othermult = net.create(multiplier.id, 'othermult')
 
     const farenheit = net.variable('farenheit')
     const centigrade = net.variable('centigrade')

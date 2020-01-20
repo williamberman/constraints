@@ -2,6 +2,7 @@ import { DataFlow } from './data-flow'
 import { fromPartial } from './network/network'
 import { PersistentNetwork } from './persistent-network'
 import { stdLib } from './std-lib'
+import { makeTemperatureNetwork as xMakeTemperatureNetwork } from './temperature'
 
 export { adder, multiplier } from './std-lib'
 
@@ -158,3 +159,5 @@ export const what = (cellId: symbol, keepCells?: symbol[]) => {
         })
     })
 }
+
+export const makeTemperatureNetwork = () => xMakeTemperatureNetwork(net)
