@@ -106,9 +106,16 @@ describe('Provenance', () => {
 
                 const actual = net.what(baz, [foo, bar, baz])
 
-                const expected = ['=', 'baz', ['+', 'foo', 'bar']]
+                const expected = {
+                    formula: ['=', 'baz', ['+', 'foo', 'bar']],
+                    variables: List([
+                        { variable: 'foo', value: 1 },
+                        { variable: 'bar', value: 2 },
+                        { variable: 'baz', value: 3 },
+                    ]),
+                }
 
-                expect(actual).toEqual(expected)
+                expect(actual).toEqual(List([expected]))
             })
 
             test('Backwards', () => {
@@ -117,9 +124,16 @@ describe('Provenance', () => {
 
                 const actual = net.what(bar, [foo, bar, baz])
 
-                const expected = ['=', 'bar', ['-', 'baz', 'foo']]
+                const expected = {
+                    formula: ['=', 'bar', ['-', 'baz', 'foo']],
+                    variables: List([
+                        { variable: 'foo', value: 1 },
+                        { variable: 'baz', value: 3 },
+                        { variable: 'bar', value: 2 },
+                    ]),
+                }
 
-                expect(actual).toEqual(expected)
+                expect(actual).toEqual(List([expected]))
             })
         })
 

@@ -45,10 +45,10 @@ export const ruleToDataFlow = ({
 
 const removeConstraint = ({
     network,
-    constraint
+    constraint,
 }: {
     network: Network,
-    constraint: Constraint
+    constraint: Constraint,
 }): Network => {
     const constraints = network.constraints.remove(constraint.id)
 

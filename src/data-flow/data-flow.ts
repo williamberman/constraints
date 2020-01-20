@@ -68,7 +68,7 @@ const ruleOutputsTo = ({
 }: {
     cell: Cell,
     rule: Rule,
-    constraint: Constraint
+    constraint: Constraint,
 }): boolean => {
     return rule.output === ensureGet(constraint.cellMapping.flip(), cell.id)
 }
@@ -127,35 +127,6 @@ const makeNonRuleDataFlows = ({
                 children,
             }])
         }
-        // TODO remove
-        // case ('calculated'): {
-        //     if (repo.content.supplier.cellId === cell.id) {
-        //         const constraint = ensureGet(network.constraints, repo.content.supplier.constraintId)
-        //         const constraintType = ensureGet(network.constraintTypes, constraint.constraintTypeId)
-        //         const rule = ensureGet(constraintType.rules, repo.content.supplier.ruleId)
-        //         const children = rule.input
-        //             .map((idInConstraint) => ensureGet(constraint.cellMapping, idInConstraint))
-        //             .map((xCellId) => ensureGet(network.cells, xCellId))
-        //             .map((childCell) => makeDataFlow(childCell, network))
-
-        //         return {
-        //             cellId: cell.id,
-        //             type: 'rule' as 'rule',
-        //             ruleId: rule.id,
-        //             constraintId: constraint.id,
-        //             children,
-        //         }
-        //     } else {
-        //         return {
-        //             cellId: cell.id,
-        //             type: 'equal' as 'equal',
-        //             child: makeDataFlow(
-        //                 ensureGet(network.cells, repo.content.supplier.cellId),
-        //                 network,
-        //             ),
-        //         }
-        //     }
-        // }
     }
 }
 

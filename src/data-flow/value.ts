@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import { List } from 'immutable'
 
 import { Cell } from '../cell'
@@ -109,9 +110,18 @@ const computeValueFromRule = ({
     if (args.type === 'valid') {
         const update = rule.update(...args.data.toArray())
 
-        const updateKey = ensureGet(constraint.cellMapping.flip(), cell.id)
+        const flippedCellMapping = constraint.cellMapping.flip()
 
-        if (updateKey in update) {
+        // Any cell which is in the same repository could have been updated by
+        // the rule
+        const outputCell = network.cells
+            .filter(({ repositoryId }) => repositoryId === cell.repositoryId)
+            .find((xCell) => flippedCellMapping.has(xCell.id) &&
+                flippedCellMapping.get(xCell.id)! in update)
+
+        if (outputCell) {
+            const updateKey = ensureGet(constraint.cellMapping.flip(), outputCell!.id)
+            assert(updateKey in update)
             return { type: 'bound', data: (update as any)[updateKey] }
         } else {
             return { type: 'empty' }
