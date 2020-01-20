@@ -82,8 +82,7 @@ const inconsistentAdderExample = () => {
 
     valueOf(baz)
 
-    // TODO need to handle side cases for value conversion
-    // what(baz, [foo, bar, baz])
+    what(baz, [foo, bar, baz])
 }
 
 const centigradeToFarenheitExample = () => {

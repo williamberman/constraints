@@ -41,10 +41,20 @@ export const convertToSymbolic = (df: DataFlow, network: Network): SymbolicDataF
 
             const value = (() => {
                 const nval = toNetworkValue(df, network)
-                if (nval.type === 'bound') {
-                    return nval.data
-                } else {
-                    throw new Error('assert false')
+                switch (nval.type) {
+                    case 'bound': {
+                        return nval.data
+                    }
+                    case 'empty': {
+                        return '<empty>'
+                    }
+                    case 'inconsistency': {
+                        const inconsistencies = nval.values.map(({ data, cell: xCell }) => {
+                            return [xCell, data]
+                        }).toArray()
+
+                        return ['<inconsistent>', ...inconsistencies]
+                    }
                 }
             })()
 
