@@ -1,3 +1,5 @@
+import { List } from 'immutable'
+
 import { fromPartial } from './network'
 import { PersistentNetwork } from './persistent-network'
 import { stdLib } from './std-lib'
@@ -12,10 +14,10 @@ describe('Cells', () => {
     })
 
     test('constant', () => {
-        expect(net.valueOf(net.constant(2))).toEqual(2)
+        expect(net.valueOf(net.constant(2))).toEqual(List([{ data: 2, type: 'bound' }]))
     })
 
     test('variable', () => {
-        expect(net.valueOf(net.variable('any name'))).toEqual(undefined)
+        expect(net.valueOf(net.variable('any name'))).toEqual(List([{ type: 'empty' }]))
     })
 })
