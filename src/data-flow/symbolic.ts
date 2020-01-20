@@ -3,16 +3,16 @@ import { SExp } from '../symbolic-expression'
 import { ensureGet } from '../utils'
 import { DataFlow } from './data-flow'
 
-export type AlgebraicDataFlow = SExp
+export type SymbolicDataFlow = SExp
 
-export const convertToAlgebraic = (df: DataFlow, network: Network): AlgebraicDataFlow => {
+export const convertToSymbolic = (df: DataFlow, network: Network): SymbolicDataFlow => {
     const cell = ensureGet(network.cells, df.cellId)
     const repo = ensureGet(network.repositories, cell.repositoryId)
     const readableId = (cell.id as any).description
 
     switch (df.type) {
         case ('equal'): {
-            return ['=', readableId, convertToAlgebraic(df.child, network)]
+            return ['=', readableId, convertToSymbolic(df.child, network)]
         }
         case ('rule'): {
             switch (repo.content.type) {
@@ -43,7 +43,7 @@ export const convertToAlgebraic = (df: DataFlow, network: Network): AlgebraicDat
             return readableId
         }
         case ('inconsistent equal'): {
-            const children = df.children.map((child) => convertToAlgebraic(child, network))
+            const children = df.children.map((child) => convertToSymbolic(child, network))
             return ['inconsistent equal', readableId, children.toArray()]
         }
         case ('inconsistent rule'): {

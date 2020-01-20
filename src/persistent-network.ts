@@ -3,12 +3,12 @@ import { List, Map } from 'immutable'
 import { makeConstantCell, makeVariableCell } from './cell'
 import { makeConstraint } from './constraint'
 import {
-    AlgebraicDataFlow,
     collapseDataFlow,
-    convertToAlgebraic,
+    convertToSymbolic,
     DataFlow,
     makeDataFlow,
     NetworkValue,
+    SymbolicDataFlow,
     toNetworkValue,
     useExternalCells,
 } from './data-flow'
@@ -104,8 +104,8 @@ export class PersistentNetwork {
             .map((df) => useExternalCells(df, this.network))
     }
 
-    what(cellId: symbol, keepCells?: symbol[]): List<AlgebraicDataFlow> {
+    what(cellId: symbol, keepCells?: symbol[]): List<SymbolicDataFlow> {
         return this.why(cellId, keepCells)
-            .map((df) => convertToAlgebraic(df, this.network))
+            .map((df) => convertToSymbolic(df, this.network))
     }
 }
